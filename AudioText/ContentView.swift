@@ -1,13 +1,12 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var audioRecorder = AudioRecorder()
-    @StateObject private var audioPlayer = AudioPlayer()
-    @StateObject private var speechRecognizer = SpeechRecognizer()
-    @StateObject private var openAIService = OpenAIService()
+    @EnvironmentObject private var audioRecorder: AudioRecorder
+    @EnvironmentObject private var audioPlayer: AudioPlayer
+    @EnvironmentObject private var speechRecognizer: SpeechRecognizer
+    @EnvironmentObject private var openAIService: OpenAIService
 
-    @State private var showingSettings = false
-    @State private var showingTranscription = false
+    @Environment(\.openWindow) private var openWindow
 
     @State private var transcriptionMethod: TranscriptionMethod = .builtIn
     @State private var selectedLanguageCode: String = "auto"
@@ -19,6 +18,9 @@ struct ContentView: View {
     @State private var isProcessingTranscription = false
     @State private var lastProcessedRecordingID: UUID?
 
+    // iOS sheet presentation states
+    @State private var showingSettings = false
+    @State private var showingTranscription = false
     @State private var showingLibrarySheet = false
     @State private var filesSubpanel: FilesSubpanel = .list
     @State private var quickSelectedRecordingID: UUID?
@@ -65,10 +67,11 @@ struct ContentView: View {
                 }
         }
         .background(backgroundColor)
-        .environmentObject(audioRecorder)
-        .environmentObject(audioPlayer)
-        .environmentObject(speechRecognizer)
-        .environmentObject(openAIService)
+#if os(iOS)
+        // iOS uses sheets for modal presentation
+        .sheet(isPresented: $showingLibrarySheet) {
+            filesSheet
+        }
         .sheet(isPresented: $showingSettings) {
             SettingsView(
                 transcriptionMethod: $transcriptionMethod,
@@ -88,11 +91,7 @@ struct ContentView: View {
                 transcription: recording.transcript ?? "No transcript is available for this recording yet."
             )
         }
-        .sheet(isPresented: $showingLibrarySheet) {
-            filesSheet
-                .environmentObject(audioRecorder)
-                .environmentObject(audioPlayer)
-        }
+#endif
         .alert("Recording Error", isPresented: recordingErrorBinding) {
             Button("OK", role: .cancel) {
                 audioRecorder.recordingError = nil
@@ -277,8 +276,12 @@ struct ContentView: View {
 
     private var libraryButton: some View {
         Button {
+#if os(macOS)
+            openWindow(id: "files")
+#else
             filesSubpanel = .list
             showingLibrarySheet = true
+#endif
         } label: {
             Label("Library", systemImage: "music.note.list")
                 .font(.headline)
@@ -590,21 +593,33 @@ struct ContentView: View {
     private var settingsMenu: some View {
         Menu {
             Button {
+#if os(macOS)
+                openWindow(id: "files")
+#else
                 filesSubpanel = .list
                 showingLibrarySheet = true
+#endif
             } label: {
                 Label("Library", systemImage: "folder")
             }
 
             Button {
+#if os(macOS)
+                openWindow(id: "settings")
+#else
                 showingSettings = true
+#endif
             } label: {
                 Label("Settings", systemImage: "gear")
             }
 
             if !currentTranscription.isEmpty {
                 Button {
+#if os(macOS)
+                    openWindow(id: "transcription", value: currentTranscription)
+#else
                     showingTranscription = true
+#endif
                 } label: {
                     Label("Transcription", systemImage: "text.bubble")
                 }
@@ -712,7 +727,11 @@ struct ContentView: View {
                 Task { @MainActor in
                     audioRecorder.attachTranscript(text, to: recording)
                     currentTranscription = text
+#if os(macOS)
+                    openWindow(id: "transcription", value: text)
+#else
                     showingTranscription = true
+#endif
                     quickSelectedRecordingID = recording.id
                 }
             } catch {

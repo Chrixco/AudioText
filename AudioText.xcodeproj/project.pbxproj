@@ -8,13 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		865CFB712EAD31D4005AF892 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB22222222222226 /* Preview Assets.xcassets */; };
+		868EF2372EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */; };
+		868EF2382EAFA50800E7A496 /* SettingsWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */; };
+		868EF2392EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */; };
+		868EF23A2EAFA50800E7A496 /* SettingsWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */; };
 		AA11111111111111 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222 /* AudioTextApp.swift */; };
 		AA11111111111112 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222223 /* ContentView.swift */; };
 		AA11111111111113 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222224 /* SettingsView.swift */; };
 		AA11111111111114 /* FilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222232 /* FilesView.swift */; };
 		AA11111111111115 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB22222222222225 /* Assets.xcassets */; };
-		AA11111111111116 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222 /* AudioTextApp.swift */; };
-		AA11111111111117 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222223 /* ContentView.swift */; };
 		AA11111111111118 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222224 /* SettingsView.swift */; };
 		AA11111111111119 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB22222222222225 /* Assets.xcassets */; };
 		AA11111111111120 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB22222222222226 /* Preview Assets.xcassets */; };
@@ -33,23 +35,25 @@
 		AA11111111111133 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222244 /* OpenAIService.swift */; };
 		AA11111111111144 /* TranscriptionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222250 /* TranscriptionResult.swift */; };
 		AA11111111111145 /* TranscriptionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222250 /* TranscriptionResult.swift */; };
-		AA33333333333330 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333330 /* ContentView.swift */; };
-		AA33333333333331 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333331 /* AudioTextApp.swift */; };
-		AA33333333333332 /* RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333332 /* RotaryKnob.swift */; };
-		AA33333333333333 /* RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333332 /* RotaryKnob.swift */; };
 		AA11111111111146 /* RecordingMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222251 /* RecordingMetadataStore.swift */; };
 		AA11111111111147 /* RecordingMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222251 /* RecordingMetadataStore.swift */; };
 		AA11111111111148 /* LanguageOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222252 /* LanguageOption.swift */; };
 		AA11111111111149 /* LanguageOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222252 /* LanguageOption.swift */; };
-		AA55555555555550 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* ShareSheet.swift */; };
-		AA55555555555551 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* ShareSheet.swift */; };
-		AA55555555555552 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
-		AA55555555555553 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
 		AA11111111111150 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222253 /* EqualizerSettings.swift */; };
 		AA11111111111151 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222253 /* EqualizerSettings.swift */; };
+		AA33333333333330 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333330 /* ContentView.swift */; };
+		AA33333333333331 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333331 /* AudioTextApp.swift */; };
+		AA33333333333332 /* Components/RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333332 /* Components/RotaryKnob.swift */; };
+		AA33333333333333 /* Components/RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333332 /* Components/RotaryKnob.swift */; };
+		AA55555555555550 /* Components/ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* Components/ShareSheet.swift */; };
+		AA55555555555551 /* Components/ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* Components/ShareSheet.swift */; };
+		AA55555555555552 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
+		AA55555555555553 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowView.swift; sourceTree = "<group>"; };
+		868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionWindowView.swift; sourceTree = "<group>"; };
 		BB22222222222222 /* AudioTextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTextApp.swift; sourceTree = "<group>"; };
 		BB22222222222223 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB22222222222224 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -67,11 +71,11 @@
 		BB22222222222251 /* RecordingMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMetadataStore.swift; sourceTree = "<group>"; };
 		BB22222222222252 /* LanguageOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageOption.swift; sourceTree = "<group>"; };
 		BB22222222222253 /* EqualizerSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerSettings.swift; sourceTree = "<group>"; };
-		BB55555555555550 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/ShareSheet.swift; sourceTree = "<group>"; };
-		BB55555555555551 /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportManager.swift; sourceTree = "<group>"; };
 		BB33333333333330 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB33333333333331 /* AudioTextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTextApp.swift; sourceTree = "<group>"; };
-		BB33333333333332 /* RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/RotaryKnob.swift; sourceTree = "<group>"; };
+		BB33333333333332 /* Components/RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/RotaryKnob.swift; sourceTree = "<group>"; };
+		BB55555555555550 /* Components/ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/ShareSheet.swift; sourceTree = "<group>"; };
+		BB55555555555551 /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportManager.swift; sourceTree = "<group>"; };
 		CC33333333333333 /* AudioText.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioText.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC33333333333334 /* AudioText macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AudioText macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -106,6 +110,8 @@
 		FF66666666666666 /* AudioText */ = {
 			isa = PBXGroup;
 			children = (
+				868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */,
+				868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */,
 				BB22222222222222 /* AudioTextApp.swift */,
 				BB22222222222223 /* ContentView.swift */,
 				BB22222222222224 /* SettingsView.swift */,
@@ -170,12 +176,12 @@
 		FF66666666666681 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				BB33333333333332 /* RotaryKnob.swift */,
+				BB33333333333332 /* Components/RotaryKnob.swift */,
 				BB22222222222241 /* AudioRecorder.swift */,
 				BB22222222222242 /* AudioPlayer.swift */,
 				BB22222222222243 /* SpeechRecognizer.swift */,
 				BB22222222222244 /* OpenAIService.swift */,
-				BB55555555555550 /* ShareSheet.swift */,
+				BB55555555555550 /* Components/ShareSheet.swift */,
 			);
 			name = Core;
 			sourceTree = "<group>";
@@ -290,6 +296,8 @@
 			files = (
 				AA11111111111147 /* RecordingMetadataStore.swift in Sources */,
 				AA11111111111151 /* EqualizerSettings.swift in Sources */,
+				868EF2392EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */,
+				868EF23A2EAFA50800E7A496 /* SettingsWindowView.swift in Sources */,
 				AA11111111111149 /* LanguageOption.swift in Sources */,
 				AA55555555555553 /* ExportManager.swift in Sources */,
 				AA11111111111130 /* AudioRecorder.swift in Sources */,
@@ -298,8 +306,8 @@
 				AA11111111111133 /* OpenAIService.swift in Sources */,
 				AA11111111111145 /* TranscriptionResult.swift in Sources */,
 				AA11111111111125 /* RecordingFile.swift in Sources */,
-				AA33333333333332 /* RotaryKnob.swift in Sources */,
-				AA55555555555551 /* ShareSheet.swift in Sources */,
+				AA33333333333332 /* Components/RotaryKnob.swift in Sources */,
+				AA55555555555551 /* Components/ShareSheet.swift in Sources */,
 				AA33333333333330 /* ContentView.swift in Sources */,
 				AA11111111111118 /* SettingsView.swift in Sources */,
 				AA11111111111121 /* FilesView.swift in Sources */,
@@ -314,6 +322,8 @@
 			files = (
 				AA11111111111146 /* RecordingMetadataStore.swift in Sources */,
 				AA11111111111150 /* EqualizerSettings.swift in Sources */,
+				868EF2372EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */,
+				868EF2382EAFA50800E7A496 /* SettingsWindowView.swift in Sources */,
 				AA11111111111148 /* LanguageOption.swift in Sources */,
 				AA55555555555552 /* ExportManager.swift in Sources */,
 				AA11111111111126 /* AudioRecorder.swift in Sources */,
@@ -322,8 +332,8 @@
 				AA11111111111129 /* OpenAIService.swift in Sources */,
 				AA11111111111144 /* TranscriptionResult.swift in Sources */,
 				AA11111111111124 /* RecordingFile.swift in Sources */,
-				AA33333333333333 /* RotaryKnob.swift in Sources */,
-				AA55555555555550 /* ShareSheet.swift in Sources */,
+				AA33333333333333 /* Components/RotaryKnob.swift in Sources */,
+				AA55555555555550 /* Components/ShareSheet.swift in Sources */,
 				AA11111111111112 /* ContentView.swift in Sources */,
 				AA11111111111113 /* SettingsView.swift in Sources */,
 				AA11111111111114 /* FilesView.swift in Sources */,
@@ -464,7 +474,7 @@
 				DEVELOPMENT_TEAM = CS83ZATJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AudioText uses your microphone to capture audio so it can visualize and transcribe your recordings";
-               INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "AudioText uses speech recognition to transcribe your recordings into text.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "AudioText uses speech recognition to transcribe your recordings into text.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -494,7 +504,7 @@
 				DEVELOPMENT_TEAM = CS83ZATJSZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "AudioText uses your microphone to capture audio so it can visualize and transcribe your recordings";
-               INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "AudioText uses speech recognition to transcribe your recordings into text.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "AudioText uses speech recognition to transcribe your recordings into text.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

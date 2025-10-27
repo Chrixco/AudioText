@@ -3,9 +3,19 @@ import Speech
 
 @main
 struct AudioTextApp: App {
+    @StateObject private var audioRecorder = AudioRecorder()
+    @StateObject private var audioPlayer = AudioPlayer()
+    @StateObject private var speechRecognizer = SpeechRecognizer()
+    @StateObject private var openAIService = OpenAIService()
+
     var body: some Scene {
-        WindowGroup {
+        // Main Recording Window
+        WindowGroup(id: "main") {
             ContentView()
+                .environmentObject(audioRecorder)
+                .environmentObject(audioPlayer)
+                .environmentObject(speechRecognizer)
+                .environmentObject(openAIService)
                 .onAppear {
                     // Add a small delay to ensure the app is fully loaded
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -13,8 +23,28 @@ struct AudioTextApp: App {
                     }
                 }
         }
+
+        // Settings Window
+        WindowGroup(id: "settings") {
+            SettingsWindowView()
+                .environmentObject(audioRecorder)
+                .environmentObject(speechRecognizer)
+                .environmentObject(openAIService)
+        }
+
+        // Files/Library Window
+        WindowGroup(id: "files") {
+            FilesView()
+                .environmentObject(audioRecorder)
+                .environmentObject(audioPlayer)
+        }
+
+        // Transcription Window
+        WindowGroup(id: "transcription", for: String.self) { $transcription in
+            TranscriptionWindowView(transcription: transcription ?? "")
+        }
     }
-    
+
     private func requestPermissions() {
         // Request speech recognition permission
         SFSpeechRecognizer.requestAuthorization { status in
