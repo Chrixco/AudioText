@@ -12,6 +12,10 @@
 		868EF2382EAFA50800E7A496 /* SettingsWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */; };
 		868EF2392EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */; };
 		868EF23A2EAFA50800E7A496 /* SettingsWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */; };
+		868EF23D2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */; };
+		868EF23E2EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */; };
+		868EF23F2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */; };
+		868EF2402EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */; };
 		AA11111111111111 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222 /* AudioTextApp.swift */; };
 		AA11111111111112 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222223 /* ContentView.swift */; };
 		AA11111111111113 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222224 /* SettingsView.swift */; };
@@ -54,6 +58,8 @@
 /* Begin PBXFileReference section */
 		868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowView.swift; sourceTree = "<group>"; };
 		868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionWindowView.swift; sourceTree = "<group>"; };
+		868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryWindowView.swift; sourceTree = "<group>"; };
+		868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerWindowView.swift; sourceTree = "<group>"; };
 		BB22222222222222 /* AudioTextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTextApp.swift; sourceTree = "<group>"; };
 		BB22222222222223 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB22222222222224 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -110,6 +116,8 @@
 		FF66666666666666 /* AudioText */ = {
 			isa = PBXGroup;
 			children = (
+				868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */,
+				868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */,
 				868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */,
 				868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */,
 				BB22222222222222 /* AudioTextApp.swift */,
@@ -309,6 +317,8 @@
 				AA33333333333332 /* Components/RotaryKnob.swift in Sources */,
 				AA55555555555551 /* Components/ShareSheet.swift in Sources */,
 				AA33333333333330 /* ContentView.swift in Sources */,
+				868EF23D2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */,
+				868EF23E2EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */,
 				AA11111111111118 /* SettingsView.swift in Sources */,
 				AA11111111111121 /* FilesView.swift in Sources */,
 				AA11111111111123 /* AudioVisualizer.swift in Sources */,
@@ -335,6 +345,8 @@
 				AA33333333333333 /* Components/RotaryKnob.swift in Sources */,
 				AA55555555555550 /* Components/ShareSheet.swift in Sources */,
 				AA11111111111112 /* ContentView.swift in Sources */,
+				868EF23F2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */,
+				868EF2402EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */,
 				AA11111111111113 /* SettingsView.swift in Sources */,
 				AA11111111111114 /* FilesView.swift in Sources */,
 				AA11111111111122 /* AudioVisualizer.swift in Sources */,

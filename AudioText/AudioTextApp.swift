@@ -32,9 +32,16 @@ struct AudioTextApp: App {
                 .environmentObject(openAIService)
         }
 
-        // Files/Library Window
-        WindowGroup(id: "files") {
-            FilesView()
+        // Library Window
+        WindowGroup(id: "library") {
+            LibraryWindowView()
+                .environmentObject(audioRecorder)
+                .environmentObject(audioPlayer)
+        }
+
+        // Player Window
+        WindowGroup(id: "player") {
+            PlayerWindowView()
                 .environmentObject(audioRecorder)
                 .environmentObject(audioPlayer)
         }

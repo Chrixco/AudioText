@@ -68,8 +68,8 @@ struct ContentView: View {
         }
         .background(backgroundColor)
 #if os(iOS)
-        // iOS uses sheets for modal presentation
-        .sheet(isPresented: $showingLibrarySheet) {
+        // iOS uses fullscreen for Library/Player, sheets for Settings
+        .fullScreenCover(isPresented: $showingLibrarySheet) {
             filesSheet
         }
         .sheet(isPresented: $showingSettings) {
@@ -83,10 +83,10 @@ struct ContentView: View {
             .environmentObject(speechRecognizer)
             .environmentObject(openAIService)
         }
-        .sheet(isPresented: $showingTranscription) {
+        .fullScreenCover(isPresented: $showingTranscription) {
             TranscriptionView(transcription: currentTranscription)
         }
-        .sheet(item: $panelScriptRecording) { recording in
+        .fullScreenCover(item: $panelScriptRecording) { recording in
             TranscriptionView(
                 transcription: recording.transcript ?? "No transcript is available for this recording yet."
             )
@@ -277,7 +277,7 @@ struct ContentView: View {
     private var libraryButton: some View {
         Button {
 #if os(macOS)
-            openWindow(id: "files")
+            openWindow(id: "library")
 #else
             filesSubpanel = .list
             showingLibrarySheet = true
@@ -594,13 +594,24 @@ struct ContentView: View {
         Menu {
             Button {
 #if os(macOS)
-                openWindow(id: "files")
+                openWindow(id: "library")
 #else
                 filesSubpanel = .list
                 showingLibrarySheet = true
 #endif
             } label: {
                 Label("Library", systemImage: "folder")
+            }
+
+            Button {
+#if os(macOS)
+                openWindow(id: "player")
+#else
+                filesSubpanel = .equalizer
+                showingLibrarySheet = true
+#endif
+            } label: {
+                Label("Player", systemImage: "play.circle")
             }
 
             Button {

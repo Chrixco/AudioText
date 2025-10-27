@@ -34,13 +34,25 @@ struct AudioTextApp: App {
         }
         .defaultSize(width: 600, height: 700)
 
-        // Files/Library Window
-        Window("Library", id: "files") {
-            FilesView()
+        // Library Window
+        Window("Library", id: "library") {
+            LibraryWindowView()
                 .environmentObject(audioRecorder)
                 .environmentObject(audioPlayer)
         }
-        .defaultSize(width: 800, height: 600)
+        .defaultSize(width: 1200, height: 800)
+        .windowResizability(.contentSize)
+        .windowFullScreenBehavior(.enabled)
+
+        // Player Window
+        Window("Player", id: "player") {
+            PlayerWindowView()
+                .environmentObject(audioRecorder)
+                .environmentObject(audioPlayer)
+        }
+        .defaultSize(width: 1000, height: 800)
+        .windowResizability(.contentSize)
+        .windowFullScreenBehavior(.enabled)
 
         // Transcription Window
         WindowGroup(id: "transcription", for: String.self) { $transcription in
