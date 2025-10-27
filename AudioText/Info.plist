@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AudioText needs access to your microphone to record audio and show real-time audio visualization.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>AudioText needs access to speech recognition to transcribe your audio recordings into text using built-in dictation or AI transcription.</string>
+</dict>
+</plist>
