@@ -1191,56 +1191,15 @@ private struct EqualizerPanel: View {
     let recording: RecordingFile
     @State var settings: EqualizerSettings
     let onSave: (EqualizerSettings) -> Void
+    @EnvironmentObject private var audioPlayer: AudioPlayer
 
     var body: some View {
         VStack(spacing: 16) {
-            // Preset buttons
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(EqualizerPreset.allCases) { preset in
-                        Button {
-                            settings = preset.settings
-                            onSave(settings)
-                            HapticManager.shared.selection()
-                        } label: {
-                            Text(preset.title)
-                                .font(.caption.weight(.medium))
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .background(
-                                    Capsule()
-                                        .fill(
-                                            preset.settings == settings
-                                                ? DesignSystem.Colors.accentBlue.opacity(0.2)
-                                                : DesignSystem.Colors.surface
-                                        )
-                                        .applyShadows(
-                                            preset.settings == settings
-                                                ? DesignSystem.NeumorphicShadow.smallEmbossed()
-                                                : []
-                                        )
-                                )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-
-            // EQ sliders
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(EqualizerBand.allCases) { band in
-                    EqualizerBandControl(
-                        band: band,
-                        value: Binding(
-                            get: { settings.value(for: band) },
-                            set: { newValue in
-                                settings.setValue(newValue, for: band)
-                                onSave(settings)
-                            }
-                        )
-                    )
-                }
-            }
+            // Audio Visualizer - 2 rows × 3 bars
+            NeumorphicAudioVisualizer(
+                isActive: audioPlayer.isPlaying && audioPlayer.currentRecording?.id == recording.id,
+                levelProvider: { audioPlayer.currentLevel() }
+            )
         }
         .padding(20)
         .background(
