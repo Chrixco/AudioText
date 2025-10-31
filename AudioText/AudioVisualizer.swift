@@ -9,11 +9,11 @@ struct AudioVisualizer: View {
     @State private var timerCancellable: AnyCancellable?
 
     let barCount = 32
-    let barWidth: CGFloat = 8.0
+    let barWidth: CGFloat = 10.0  // Increased from 8.0 for better visibility
     let maxBarHeight: CGFloat = 60.0
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 3) {  // Increased from 2 to 3
             ForEach(0..<barCount, id: \.self) { index in
                 AudioBar(
                     height: audioLevels[index] * maxBarHeight,
@@ -21,8 +21,9 @@ struct AudioVisualizer: View {
                 )
             }
         }
-        .frame(height: maxBarHeight + 10)
-        .padding()
+        .frame(height: maxBarHeight + 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .onAppear {
             if isActive {
                 start()
@@ -66,23 +67,61 @@ struct AudioVisualizer: View {
 struct AudioBar: View {
     let height: CGFloat
     let width: CGFloat
-    
+
+    // VU meter style color zones
+    private var barColor: LinearGradient {
+        // Calculate the percentage of the bar that's filled
+        let normalizedHeight = height / 60.0 // maxBarHeight
+
+        if normalizedHeight < 0.6 {
+            // Green zone (0-60%) - Apple green
+            return LinearGradient(
+                gradient: Gradient(colors: [
+                    DesignSystem.Colors.accentGreen,
+                    DesignSystem.Colors.accentGreen.opacity(0.8)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        } else if normalizedHeight < 0.85 {
+            // Yellow zone (60-85%) - Apple yellow
+            return LinearGradient(
+                gradient: Gradient(colors: [
+                    DesignSystem.Colors.accentYellow,
+                    DesignSystem.Colors.accentYellow.opacity(0.8)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        } else if normalizedHeight < 0.95 {
+            // Orange zone (85-95%) - Apple orange
+            return LinearGradient(
+                gradient: Gradient(colors: [
+                    DesignSystem.Colors.accentOrange,
+                    DesignSystem.Colors.accentOrange.opacity(0.8)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        } else {
+            // Red zone (95-100%) - Apple red
+            return LinearGradient(
+                gradient: Gradient(colors: [
+                    DesignSystem.Colors.error,
+                    DesignSystem.Colors.error.opacity(0.8)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
     var body: some View {
         VStack {
             Spacer()
-            
+
             Rectangle()
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.blue.opacity(0.9),
-                            Color.cyan.opacity(0.7),
-                            Color.blue.opacity(0.5)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .fill(barColor)
                 .frame(width: width, height: max(height, 2))
                 .cornerRadius(width / 2)
                 .opacity(height > 2 ? 1.0 : 0.4)

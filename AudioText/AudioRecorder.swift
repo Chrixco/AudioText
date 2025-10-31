@@ -182,6 +182,7 @@ class AudioRecorder: NSObject, ObservableObject {
         recordingTime = 0
         recordingError = nil
 
+        HapticManager.shared.recordingStart()
         startTimer()
     }
 
@@ -195,6 +196,7 @@ class AudioRecorder: NSObject, ObservableObject {
         stopTimer()
 
         isRecording = false
+        HapticManager.shared.recordingStop()
 
         defer {
             currentRecordingURL = nil
@@ -232,6 +234,7 @@ class AudioRecorder: NSObject, ObservableObject {
             recordings.removeAll { $0.id == recording.id }
             metadata.removeValue(forKey: recording.fileName)
             metadataStore.save(metadata)
+            HapticManager.shared.destructiveAction()
         } catch {
             recordingError = .fileOperationFailed(error)
         }
@@ -421,6 +424,7 @@ class AudioRecorder: NSObject, ObservableObject {
         entry.equalizerSettings = settings
         metadata[recording.fileName] = entry
         metadataStore.save(metadata)
+        HapticManager.shared.equalizerAdjust()
     }
 #if os(iOS)
     private func updateAvailableInputs() {

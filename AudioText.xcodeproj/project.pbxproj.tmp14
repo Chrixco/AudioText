@@ -59,6 +59,24 @@
 		AA55555555555551 /* Components/ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* Components/ShareSheet.swift */; };
 		AA55555555555552 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
 		AA55555555555553 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
+		EEEE1111FFFF2222AAAA3333 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDD1111EEEE2222FFFF3333 /* MainTabView.swift */; };
+		FFFF1111AAAA2222BBBB3333 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDD1111EEEE2222FFFF3333 /* MainTabView.swift */; };
+		BBBB1111CCCC2222DDDD3333 /* NeumorphicShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA1111BBBB2222CCCC3333 /* NeumorphicShowcase.swift */; };
+		CCCC1111DDDD2222EEEE3333 /* NeumorphicShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA1111BBBB2222CCCC3333 /* NeumorphicShowcase.swift */; };
+
+/* Neumorphic Components - PBXBuildFile section entries */
+		7A2B3987A1FC4D05A425BAE3 /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */; };
+		37B099731A814B219805AACA /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */; };
+		E1759BC8627941F0A03DDF57 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */; };
+		77774C39F08E4D6AA318B8C2 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */; };
+		2EF072925E9043238F6F659B /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */; };
+		FD0302B366B54AD095CD63AD /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */; };
+		3F7B90949EDA4F50BAD8AFE5 /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */; };
+		D6DBF943EAAD4889B18A9F9D /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */; };
+		5F143C52C3EE45B38C0C2CDF /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */; };
+		5F699AFFBF034BD5978407D6 /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */; };
+		210D048185E84E4C9D663698 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */; };
+		96A167C1781342508FC61424 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,10 +91,18 @@
 		BB22222222222223 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB22222222222224 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BB22222222222225 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DDDD1111EEEE2222FFFF3333 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		BB22222222222226 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		BB22222222222232 /* FilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesView.swift; sourceTree = "<group>"; };
+		AAAA1111BBBB2222CCCC3333 /* NeumorphicShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicShowcase.swift; sourceTree = "<group>"; };
 		BB22222222222233 /* AudioVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioVisualizer.swift; sourceTree = "<group>"; };
 		BB22222222222234 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicStatusBanner.swift"; sourceTree = "<group>"; };
+		6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicLanguageSelector.swift"; sourceTree = "<group>"; };
+		23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicInputModeSelector.swift"; sourceTree = "<group>"; };
+		AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicAudioVisualizer.swift"; sourceTree = "<group>"; };
+		BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicRecordingButton.swift"; sourceTree = "<group>"; };
+		98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/NeumorphicLibraryButton.swift"; sourceTree = "<group>"; };
 		BB22222222222240 /* RecordingFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingFile.swift; sourceTree = "<group>"; };
 		BB22222222222241 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		BB22222222222242 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
@@ -133,7 +159,9 @@
 				868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */,
 				868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */,
 				BB22222222222222 /* AudioTextApp.swift */,
+				AAAA1111BBBB2222CCCC3333 /* NeumorphicShowcase.swift */,
 				BB22222222222223 /* ContentView.swift */,
+				DDDD1111EEEE2222FFFF3333 /* MainTabView.swift */,
 				BB22222222222224 /* SettingsView.swift */,
 				BB22222222222232 /* FilesView.swift */,
 				FF66666666666681 /* Core */,
@@ -202,6 +230,12 @@
 				BB22222222222243 /* SpeechRecognizer.swift */,
 				BB22222222222244 /* OpenAIService.swift */,
 				BB55555555555550 /* Components/ShareSheet.swift */,
+				8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */,
+				6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */,
+				23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */,
+				AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */,
+				BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */,
+				98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */,
 			);
 			name = Core;
 			sourceTree = "<group>";
@@ -331,6 +365,12 @@
 				AA11111111111125 /* RecordingFile.swift in Sources */,
 				AA33333333333332 /* Components/RotaryKnob.swift in Sources */,
 				AA55555555555551 /* Components/ShareSheet.swift in Sources */,
+				37B099731A814B219805AACA /* NeumorphicStatusBanner.swift in Sources */,
+				77774C39F08E4D6AA318B8C2 /* NeumorphicLanguageSelector.swift in Sources */,
+				FD0302B366B54AD095CD63AD /* NeumorphicInputModeSelector.swift in Sources */,
+				D6DBF943EAAD4889B18A9F9D /* NeumorphicAudioVisualizer.swift in Sources */,
+				5F699AFFBF034BD5978407D6 /* NeumorphicRecordingButton.swift in Sources */,
+				96A167C1781342508FC61424 /* NeumorphicLibraryButton.swift in Sources */,
 				AA33333333333330 /* ContentView.swift in Sources */,
 				868EF23D2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */,
 				868EF23E2EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */,
@@ -338,6 +378,7 @@
 				AA11111111111121 /* FilesView.swift in Sources */,
 				AA11111111111123 /* AudioVisualizer.swift in Sources */,
 				AA33333333333331 /* AudioTextApp.swift in Sources */,
+				CCCC1111DDDD2222EEEE3333 /* NeumorphicShowcase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,6 +403,12 @@
 				AA11111111111124 /* RecordingFile.swift in Sources */,
 				AA33333333333333 /* Components/RotaryKnob.swift in Sources */,
 				AA55555555555550 /* Components/ShareSheet.swift in Sources */,
+				7A2B3987A1FC4D05A425BAE3 /* NeumorphicStatusBanner.swift in Sources */,
+				E1759BC8627941F0A03DDF57 /* NeumorphicLanguageSelector.swift in Sources */,
+				2EF072925E9043238F6F659B /* NeumorphicInputModeSelector.swift in Sources */,
+				3F7B90949EDA4F50BAD8AFE5 /* NeumorphicAudioVisualizer.swift in Sources */,
+				5F143C52C3EE45B38C0C2CDF /* NeumorphicRecordingButton.swift in Sources */,
+				210D048185E84E4C9D663698 /* NeumorphicLibraryButton.swift in Sources */,
 				AA11111111111112 /* ContentView.swift in Sources */,
 				868EF23F2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */,
 				868EF2402EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */,
@@ -369,6 +416,7 @@
 				AA11111111111114 /* FilesView.swift in Sources */,
 				AA11111111111122 /* AudioVisualizer.swift in Sources */,
 				AA11111111111111 /* AudioTextApp.swift in Sources */,
+				BBBB1111CCCC2222DDDD3333 /* NeumorphicShowcase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

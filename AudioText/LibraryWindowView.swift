@@ -13,10 +13,15 @@ struct LibraryWindowView: View {
     @State private var recordingToShare: RecordingFile?
     @State private var panelScriptRecording: RecordingFile?
 
+    // Edit mode state
+    @State private var isEditMode = false
+    @State private var selectedRecordings: Set<UUID> = []
+    @State private var itemsToShare: [URL] = []
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 20) {
                     if audioRecorder.recordings.isEmpty {
                         emptyState
                     } else {
@@ -24,14 +29,39 @@ struct LibraryWindowView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
             .navigationTitle("Library")
             .toolbar {
                 ToolbarItem(placement: .automatic) {
-                    Text("\(audioRecorder.recordings.count) recordings")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if !isEditMode {
+                        Text("\(audioRecorder.recordings.count) recordings")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("\(selectedRecordings.count) selected")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !audioRecorder.recordings.isEmpty {
+                        Button(isEditMode ? "Done" : "Edit") {
+                            withAnimation {
+                                isEditMode.toggle()
+                                if !isEditMode {
+                                    selectedRecordings.removeAll()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if isEditMode && !selectedRecordings.isEmpty {
+                    bottomToolbar
                 }
             }
         }
@@ -55,7 +85,12 @@ struct LibraryWindowView: View {
         }
 #if os(iOS)
         .sheet(isPresented: $showingShareSheet) {
-            if let recording = recordingToShare {
+            if !itemsToShare.isEmpty {
+                ShareSheet(items: itemsToShare)
+                    .onDisappear {
+                        itemsToShare.removeAll()
+                    }
+            } else if let recording = recordingToShare {
                 ShareSheet(items: [recording.fileURL])
             }
         }
@@ -70,34 +105,85 @@ struct LibraryWindowView: View {
     private var recordingsList: some View {
         VStack(spacing: 16) {
             ForEach(audioRecorder.recordings) { recording in
-                RecordingListRow(
-                    recording: recording,
-                    isSelected: recording.id == quickSelectedRecordingID,
-                    equalizerSettings: audioRecorder.equalizerSettings(for: recording),
-                    onPlayTapped: {
-                        quickSelectedRecordingID = recording.id
-                        togglePlayback(for: recording)
+                HStack(spacing: 12) {
+                    // Selection checkmark
+                    if isEditMode {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                if selectedRecordings.contains(recording.id) {
+                                    selectedRecordings.remove(recording.id)
+                                } else {
+                                    selectedRecordings.insert(recording.id)
+                                }
+                                HapticManager.shared.selection()
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .strokeBorder(
+                                        selectedRecordings.contains(recording.id) ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.textTertiary.opacity(0.5),
+                                        lineWidth: 2
+                                    )
+                                    .background(
+                                        Circle()
+                                            .fill(selectedRecordings.contains(recording.id) ? DesignSystem.Colors.accentBlue : Color.clear)
+                                    )
+                                    .frame(width: 24, height: 24)
+
+                                if selectedRecordings.contains(recording.id) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .transition(.scale.combined(with: .opacity))
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.scale.combined(with: .opacity))
                     }
-                )
+
+                    RecordingListRow(
+                        recording: recording,
+                        isSelected: recording.id == quickSelectedRecordingID,
+                        equalizerSettings: audioRecorder.equalizerSettings(for: recording),
+                        onPlayTapped: isEditMode ? nil : {
+                            quickSelectedRecordingID = recording.id
+                            togglePlayback(for: recording)
+                        }
+                    )
+                }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    quickSelectedRecordingID = recording.id
+                    if isEditMode {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            if selectedRecordings.contains(recording.id) {
+                                selectedRecordings.remove(recording.id)
+                            } else {
+                                selectedRecordings.insert(recording.id)
+                            }
+                            HapticManager.shared.selection()
+                        }
+                    } else {
+                        quickSelectedRecordingID = recording.id
+                    }
                 }
                 .contextMenu {
-                    Button {
-                        startRename(recording)
-                    } label: {
-                        Label("Rename", systemImage: "pencil")
-                    }
-                    Button {
-                        shareRecording(recording)
-                    } label: {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                    }
-                    Button(role: .destructive) {
-                        deleteRecording(recording)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                    if !isEditMode {
+                        Button {
+                            startRename(recording)
+                        } label: {
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        Button {
+                            shareRecording(recording)
+                        } label: {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        Button(role: .destructive) {
+                            deleteRecording(recording)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                 }
             }
@@ -115,12 +201,15 @@ struct LibraryWindowView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 300)
+        .frame(minHeight: 260)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.secondary.opacity(0.08))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.card, style: .continuous)
+                .fill(DesignSystem.Colors.surface)
+                .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.2), radius: 4, x: 2, y: 2)
+                .shadow(color: DesignSystem.Colors.highlightLight, radius: 4, x: -2, y: -2)
         )
     }
 
@@ -171,5 +260,70 @@ struct LibraryWindowView: View {
         } catch {
             print("Failed to delete recording: \(error.localizedDescription)")
         }
+    }
+
+    // MARK: - Bottom Toolbar
+    private var bottomToolbar: some View {
+        HStack(spacing: 16) {
+            // Delete button
+            Button {
+                batchDeleteRecordings()
+            } label: {
+                Label("Delete", systemImage: "trash")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .disabled(selectedRecordings.isEmpty)
+
+            // Share button
+            Button {
+                batchShareRecordings()
+            } label: {
+                Label("Share", systemImage: "square.and.arrow.up")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(selectedRecordings.isEmpty)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            .regularMaterial,
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 20)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    // MARK: - Batch Actions
+    private func batchDeleteRecordings() {
+        let recordingsToDelete = audioRecorder.recordings.filter { selectedRecordings.contains($0.id) }
+
+        for recording in recordingsToDelete {
+            do {
+                try FileManager.default.removeItem(at: recording.fileURL)
+            } catch {
+                print("Failed to delete recording: \(error.localizedDescription)")
+            }
+        }
+
+        audioRecorder.recordings.removeAll { selectedRecordings.contains($0.id) }
+        selectedRecordings.removeAll()
+        HapticManager.shared.destructiveAction()
+
+        // Exit edit mode if no recordings left
+        if audioRecorder.recordings.isEmpty {
+            withAnimation {
+                isEditMode = false
+            }
+        }
+    }
+
+    private func batchShareRecordings() {
+        let recordingsToShare = audioRecorder.recordings.filter { selectedRecordings.contains($0.id) }
+        itemsToShare = recordingsToShare.map { $0.fileURL }
+        showingShareSheet = true
     }
 }

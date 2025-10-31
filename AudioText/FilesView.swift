@@ -62,7 +62,7 @@ struct FilesView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 #if os(iOS)
-        .background(Color(uiColor: .systemBackground))
+        .background(DesignSystem.Colors.background)
         .navigationTitle("Files")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -71,7 +71,7 @@ struct FilesView: View {
             }
         }
 #else
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(DesignSystem.Colors.background)
         .frame(minWidth: 900, minHeight: 620)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -177,9 +177,9 @@ struct FilesView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Image(systemName: "waveform.circle")
-                .font(.system(size: 72))
+                .font(.system(size: 60))
                 .foregroundColor(.secondary)
             Text("No Recordings Yet")
                 .font(.title2)
@@ -188,10 +188,11 @@ struct FilesView: View {
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 20)
     }
 
     private func timeLabel(for recording: RecordingFile) -> String {
@@ -204,9 +205,9 @@ struct FilesView: View {
 
     private func playbackGradient(for recording: RecordingFile) -> LinearGradient {
         if isPlayingSelected(recording) {
-            return LinearGradient(colors: [.red, .orange], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return LinearGradient(colors: [DesignSystem.Colors.recording, DesignSystem.Colors.accentOrange], startPoint: .topLeading, endPoint: .bottomTrailing)
         } else {
-            return LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
+            return DesignSystem.Colors.accentGradient
         }
     }
 
@@ -295,8 +296,8 @@ struct RecordingDetailCard: View {
 
     @State private var knobValue: Double = 0
     @State private var isEditing = false
+    @State private var isScrubbingFromTimeline = false
     @State private var workingEqualizer: EqualizerSettings
-    @State private var activePage = 0
     @State private var shareItems: [Any] = []
     @State private var isSharing = false
     @State private var isExporting = false
@@ -318,30 +319,186 @@ struct RecordingDetailCard: View {
     }
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.primary.opacity(0.04))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        ScrollView {
+            VStack(spacing: 20) {
+                // Waveform Timeline
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("Timeline")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 8)
+                        Text("Tap or drag to scrub")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .padding(.horizontal, 4)
+
+                    WaveformTimeline(
+                        recording: recording,
+                        progress: knobValue,
+                        isPlaying: isCurrentlyPlaying,
+                        onSeek: { position in
+                            isScrubbingFromTimeline = true
+                            knobValue = position
+                            if audioPlayer.duration > 0 {
+                                audioPlayer.seek(to: position * audioPlayer.duration)
+                            }
+                            // Reset flag after a short delay to allow the knob to sync
+                            Task { @MainActor in
+                                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                                isScrubbingFromTimeline = false
+                            }
+                        }
+                    )
+                }
+
+                // Live Audio Visualizer
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Live Level")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 4)
+
+                    AudioVisualizer(
+                        isActive: isCurrentlyPlaying,
+                        levelProvider: { audioPlayer.currentLevel() }
+                    )
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                            .fill(DesignSystem.Colors.surface)
+                            .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.2), radius: 4, x: 2, y: 2)
+                            .shadow(color: DesignSystem.Colors.highlightLight, radius: 4, x: -2, y: -2)
+                    )
+                }
+
+                // Rotary Knob
+                RotaryKnob(
+                    value: $knobValue,
+                    isActive: isCurrentlyPlaying,
+                    onEditingChanged: { editing in
+                        isEditing = editing
+                        if editing {
+                            audioPlayer.beginInteractiveScrub(for: recording)
+                        } else {
+                            audioPlayer.endInteractiveScrub()
+                            syncKnobWithPlayer()
+                        }
+                    },
+                    onTap: togglePlayback,
+                    centerIcon: isCurrentlyPlaying ? "pause.fill" : "play.fill",
+                    centerTitle: isCurrentlyPlaying ? "Pause" : "Play",
+                    centerSubtitle: timeLabel,
+                    onScrubDelta: handleScrubDelta
                 )
+                .frame(width: 200, height: 200)
+                .onAppear(perform: syncKnobWithPlayer)
+                .onChange(of: audioPlayer.currentTime) { _ in
+                    guard !isEditing, !isScrubbingFromTimeline, isTrackingCurrentRecording, audioPlayer.duration > 0 else { return }
+                    knobValue = audioPlayer.progress
+                }
+                .onChange(of: audioPlayer.currentRecording?.id) { _ in
+                    syncKnobWithPlayer()
+                }
 
-            TabView(selection: $activePage) {
-                playbackPage
-                    .tag(0)
-                    .accessibilityLabel("Playback controls")
+                // Recording info
+                VStack(spacing: 6) {
+                    Text(cleanRecordingName)
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
 
-                equalizerPage
-                    .tag(1)
-                    .accessibilityLabel("Player settings")
+                    Text(timeLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                // Action buttons
+                VStack(spacing: 12) {
+                    scriptControl
+                    exportControls
+                }
+
+                Divider()
+                    .padding(.vertical, 8)
+
+                // Equalizer Section
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Equalizer")
+                            .font(.title3.weight(.semibold))
+                            .padding(.horizontal, 4)
+                        Text("Adjust five-band EQ and output gain, then save to this recording.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 4)
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .bottom, spacing: 16) {
+                            ForEach(tonalBands) { band in
+                                EqualizerBandControl(
+                                    band: band,
+                                    value: binding(for: band)
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                    }
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Output Gain")
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 4)
+                        EqualizerBandControl(
+                            band: .preGain,
+                            value: binding(for: .preGain)
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    presetsSection
+
+                    VStack(spacing: 10) {
+                        if isEqualizerDirty {
+                            Text("Unsaved changes")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Saved profile: \(equalizerSettings.formattedSummary())")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        HStack(spacing: 10) {
+                            Button("Reset to Flat") {
+                                workingEqualizer = .flat
+                            }
+                            .buttonStyle(.bordered)
+
+                            Button {
+                                saveEqualizer()
+                            } label: {
+                                Label("Save Settings", systemImage: "square.and.arrow.down")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!isEqualizerDirty)
+                        }
+                    }
+                }
             }
-#if os(iOS)
-            .tabViewStyle(.page(indexDisplayMode: .automatic))
-#endif
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
         }
-        .frame(maxWidth: .infinity)
-        .frame(minHeight: 520)
-        .padding(.vertical, 4)
         .onChange(of: equalizerSettings) { newValue in
             if newValue != workingEqualizer {
                 workingEqualizer = newValue
@@ -349,7 +506,6 @@ struct RecordingDetailCard: View {
         }
         .onChange(of: recording.id) { _ in
             workingEqualizer = equalizerSettings
-            activePage = 0
             syncKnobWithPlayer()
         }
     }
@@ -381,8 +537,10 @@ struct RecordingDetailCard: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.blue.opacity(0.12))
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.button, style: .continuous)
+                                .fill(DesignSystem.Colors.surface)
+                                .shadow(color: DesignSystem.Colors.highlightLight, radius: 3, x: -2, y: -2)
+                                .shadow(color: DesignSystem.Colors.shadowDark, radius: 4, x: 2, y: 2)
                         )
                 }
                 .buttonStyle(.plain)
@@ -398,8 +556,10 @@ struct RecordingDetailCard: View {
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.gray.opacity(0.1))
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.button, style: .continuous)
+                        .fill(DesignSystem.Colors.surface.opacity(0.5))
+                        .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.15), radius: 2, x: 1, y: 1)
+                        .shadow(color: DesignSystem.Colors.highlightLight.opacity(0.5), radius: 2, x: -1, y: -1)
                 )
             }
         }
@@ -436,8 +596,10 @@ struct RecordingDetailCard: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color.blue.opacity(0.12))
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.button, style: .continuous)
+                                    .fill(DesignSystem.Colors.surface)
+                                    .shadow(color: DesignSystem.Colors.highlightLight, radius: 3, x: -2, y: -2)
+                                    .shadow(color: DesignSystem.Colors.shadowDark, radius: 4, x: 2, y: 2)
                             )
                     }
                     .disabled(isExporting)
@@ -463,29 +625,6 @@ struct RecordingDetailCard: View {
         }
     }
 
-    private var equalizerPreview: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Label("Audio Settings", systemImage: "slider.horizontal.3")
-                    .font(.subheadline.weight(.semibold))
-                Spacer()
-                Text(equalizerSettings.formattedSummary())
-                    .font(.caption)
-                    .foregroundStyle(equalizerSettings.isFlat ? Color.secondary : Color.blue)
-            }
-
-            Text("Swipe → to fine-tune this mix. Save profiles per recording for consistent playback.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.blue.opacity(0.08))
-        )
-    }
-
     private func syncKnobWithPlayer() {
         guard isTrackingCurrentRecording, audioPlayer.duration > 0 else {
             knobValue = 0
@@ -500,134 +639,6 @@ struct RecordingDetailCard: View {
         audioPlayer.updateInteractiveScrub(progress: knobValue, velocity: velocity)
     }
 
-    private var playbackPage: some View {
-        VStack(spacing: 24) {
-            AudioVisualizer(
-                isActive: isCurrentlyPlaying,
-                levelProvider: { audioPlayer.currentLevel() }
-            )
-            .frame(height: 90)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.blue.opacity(0.1))
-            )
-
-            RotaryKnob(
-                value: $knobValue,
-                isActive: isCurrentlyPlaying,
-                onEditingChanged: { editing in
-                    isEditing = editing
-                    if editing {
-                        audioPlayer.beginInteractiveScrub(for: recording)
-                    } else {
-                        audioPlayer.endInteractiveScrub()
-                        syncKnobWithPlayer()
-                    }
-                },
-                onTap: togglePlayback,
-                centerIcon: isCurrentlyPlaying ? "pause.fill" : "play.fill",
-                centerTitle: isCurrentlyPlaying ? "Pause" : "Play",
-                centerSubtitle: timeLabel,
-                onScrubDelta: handleScrubDelta
-            )
-            .frame(width: 220, height: 220)
-            .onAppear(perform: syncKnobWithPlayer)
-            .onChange(of: audioPlayer.currentTime) { _ in
-                guard !isEditing, isTrackingCurrentRecording, audioPlayer.duration > 0 else { return }
-                knobValue = audioPlayer.progress
-            }
-            .onChange(of: audioPlayer.currentRecording?.id) { _ in
-                syncKnobWithPlayer()
-            }
-
-            VStack(spacing: 8) {
-                Text(cleanRecordingName)
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-
-                Text(timeLabel)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            scriptControl
-            exportControls
-            equalizerPreview
-        }
-        .padding(24)
-    }
-
-    private var equalizerPage: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Audio Player")
-                        .font(.title3.weight(.semibold))
-                    Text("Dial in classic five-band EQ curves plus output trim, then save them to this recording.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .bottom, spacing: 18) {
-                        ForEach(tonalBands) { band in
-                            EqualizerBandControl(
-                                band: band,
-                                value: binding(for: band)
-                            )
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Output Gain")
-                        .font(.subheadline.weight(.semibold))
-                    EqualizerBandControl(
-                        band: .preGain,
-                        value: binding(for: .preGain)
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                presetsSection
-
-                VStack(spacing: 12) {
-                    if isEqualizerDirty {
-                        Text("Unsaved changes")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Saved profile: \(equalizerSettings.formattedSummary())")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    HStack(spacing: 12) {
-                        Button("Reset to Flat") {
-                            workingEqualizer = .flat
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button {
-                            saveEqualizer()
-                        } label: {
-                            Label("Save Settings", systemImage: "square.and.arrow.down")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!isEqualizerDirty)
-                    }
-                }
-            }
-            .padding(24)
-        }
-    }
-
     private var tonalBands: [EqualizerBand] {
         EqualizerBand.allCases.filter { $0 != .preGain }
     }
@@ -637,12 +648,13 @@ struct RecordingDetailCard: View {
     }
 
     private var presetsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Presets")
                 .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 4)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     ForEach(EqualizerPreset.allCases) { preset in
                         Button {
                             workingEqualizer = preset.settings
@@ -650,15 +662,18 @@ struct RecordingDetailCard: View {
                             Text(preset.title)
                                 .font(.caption.weight(.medium))
                                 .padding(.vertical, 8)
-                                .padding(.horizontal, 14)
+                                .padding(.horizontal, 12)
                                 .background(
                                     Capsule()
-                                        .fill(preset.settings == workingEqualizer ? Color.blue.opacity(0.2) : Color.gray.opacity(0.15))
+                                        .fill(preset.settings == workingEqualizer ? DesignSystem.Colors.accentBlue.opacity(0.2) : DesignSystem.Colors.surface)
+                                        .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.2), radius: 2, x: 1, y: 1)
+                                        .shadow(color: DesignSystem.Colors.highlightLight, radius: 2, x: -1, y: -1)
                                 )
                         }
                         .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, 4)
             }
         }
     }
@@ -675,7 +690,6 @@ struct RecordingDetailCard: View {
     private func saveEqualizer() {
         let snapshot = workingEqualizer
         onSaveEqualizer(snapshot)
-        activePage = 0
     }
 
     private var cleanRecordingName: String {
@@ -714,8 +728,8 @@ struct EqualizerBandControl: View {
     let band: EqualizerBand
     @Binding var value: Double
 
-    private let barWidth: CGFloat = 52
-    private let barHeight: CGFloat = 180
+    private let barWidth: CGFloat = 56  // Increased from 52
+    private let barHeight: CGFloat = 190  // Increased from 180
 
     var body: some View {
         VStack(spacing: 8) {
@@ -727,13 +741,15 @@ struct EqualizerBandControl: View {
                 let height = proxy.size.height
 
                 ZStack(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color.gray.opacity(0.16))
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                        .fill(DesignSystem.Colors.background)
+                        .shadow(color: DesignSystem.Colors.shadowDark, radius: 10, x: 4, y: 4)
+                        .shadow(color: DesignSystem.Colors.shadowLight, radius: 8, x: -3, y: -3)
 
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [Color.blue.opacity(0.15), Color.blue],
+                                colors: [DesignSystem.Colors.accentBlue.opacity(0.35), DesignSystem.Colors.accentBlue.opacity(0.75)],
                                 startPoint: .bottom,
                                 endPoint: .top
                             )
@@ -826,7 +842,7 @@ struct RecordingListRow: View {
             }
 
             HStack(spacing: 12) {
-                Label(recording.formattedDate, systemImage: "calendar")
+                    Label(recording.formattedDate, systemImage: "calendar")
                 Label(recording.formattedFileSize, systemImage: "tray")
             }
             .labelStyle(.titleAndIcon)
@@ -839,7 +855,7 @@ struct RecordingListRow: View {
                 Image(systemName: "slider.horizontal.3")
             }
             .font(.caption2)
-            .foregroundStyle(equalizerSettings.isFlat ? Color.secondary : Color.blue)
+            .foregroundStyle(equalizerSettings.isFlat ? Color.secondary : DesignSystem.Colors.accentBlue)
 
             if let transcript = recording.transcript, !transcript.isEmpty {
                 Text(transcript)
@@ -855,8 +871,8 @@ struct RecordingListRow: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 4)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(isSelected ? Color.blue.opacity(0.12) : Color.clear)
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                .fill(isSelected ? DesignSystem.Colors.accentBlue.opacity(0.15) : Color.clear)
         )
     }
 }

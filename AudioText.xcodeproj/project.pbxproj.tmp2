@@ -59,6 +59,20 @@
 		AA55555555555551 /* Components/ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555550 /* Components/ShareSheet.swift */; };
 		AA55555555555552 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
 		AA55555555555553 /* ExportManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55555555555551 /* ExportManager.swift */; };
+
+/* Neumorphic Components - PBXBuildFile section entries */
+		7A2B3987A1FC4D05A425BAE3 /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */; };
+		37B099731A814B219805AACA /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBC8FDCAEF44739819FC233 /* NeumorphicStatusBanner.swift */; };
+		E1759BC8627941F0A03DDF57 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */; };
+		77774C39F08E4D6AA318B8C2 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5D914E76F546988CE41DF6 /* NeumorphicLanguageSelector.swift */; };
+		2EF072925E9043238F6F659B /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */; };
+		FD0302B366B54AD095CD63AD /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EF7C9011E14DDCA968DAC6 /* NeumorphicInputModeSelector.swift */; };
+		3F7B90949EDA4F50BAD8AFE5 /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */; };
+		D6DBF943EAAD4889B18A9F9D /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5CF3A21C76425DBEDA5FB2 /* NeumorphicAudioVisualizer.swift */; };
+		5F143C52C3EE45B38C0C2CDF /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */; };
+		5F699AFFBF034BD5978407D6 /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA430846A65F46599DD8DE38 /* NeumorphicRecordingButton.swift */; };
+		210D048185E84E4C9D663698 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */; };
+		96A167C1781342508FC61424 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C37054C47443D7BD5F7F15 /* NeumorphicLibraryButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */

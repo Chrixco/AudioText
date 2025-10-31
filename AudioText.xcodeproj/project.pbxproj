@@ -16,6 +16,30 @@
 		868EF23E2EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */; };
 		868EF23F2EAFAAA700E7A496 /* LibraryWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */; };
 		868EF2402EAFAAA700E7A496 /* PlayerWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */; };
+		868EF2922EB4DFDD00E7A496 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2902EB4DFDD00E7A496 /* MainTabView.swift */; };
+		868EF2932EB4DFDD00E7A496 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF28E2EB4DFDD00E7A496 /* DesignSystem.swift */; };
+		868EF2942EB4DFDD00E7A496 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF28F2EB4DFDD00E7A496 /* HapticManager.swift */; };
+		868EF2952EB4DFDD00E7A496 /* WaveformTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2912EB4DFDD00E7A496 /* WaveformTimeline.swift */; };
+		868EF2962EB4DFDD00E7A496 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2902EB4DFDD00E7A496 /* MainTabView.swift */; };
+		868EF2972EB4DFDD00E7A496 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF28E2EB4DFDD00E7A496 /* DesignSystem.swift */; };
+		868EF2982EB4DFDD00E7A496 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF28F2EB4DFDD00E7A496 /* HapticManager.swift */; };
+		868EF2992EB4DFDD00E7A496 /* WaveformTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2912EB4DFDD00E7A496 /* WaveformTimeline.swift */; };
+		868EF2C42EB56E0800E7A496 /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BD2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift */; };
+		868EF2C52EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C22EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift */; };
+		868EF2C62EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BC2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift */; };
+		868EF2C72EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BE2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift */; };
+		868EF2C82EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C32EB56E0800E7A496 /* NeumorphicStatusBanner.swift */; };
+		868EF2C92EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BF2EB56E0800E7A496 /* NeumorphicLibraryButton.swift */; };
+		868EF2CA2EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C12EB56E0800E7A496 /* NeumorphicRecordingButton.swift */; };
+		868EF2CB2EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C02EB56E0800E7A496 /* NeumorphicPlaybackControls.swift */; };
+		868EF2CC2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BD2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift */; };
+		868EF2CD2EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C22EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift */; };
+		868EF2CE2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BC2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift */; };
+		868EF2CF2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BE2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift */; };
+		868EF2D02EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C32EB56E0800E7A496 /* NeumorphicStatusBanner.swift */; };
+		868EF2D12EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2BF2EB56E0800E7A496 /* NeumorphicLibraryButton.swift */; };
+		868EF2D22EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C12EB56E0800E7A496 /* NeumorphicRecordingButton.swift */; };
+		868EF2D32EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2C02EB56E0800E7A496 /* NeumorphicPlaybackControls.swift */; };
 		AA11111111111111 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222222 /* AudioTextApp.swift */; };
 		AA11111111111112 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222223 /* ContentView.swift */; };
 		AA11111111111113 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222224 /* SettingsView.swift */; };
@@ -60,6 +84,18 @@
 		868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionWindowView.swift; sourceTree = "<group>"; };
 		868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryWindowView.swift; sourceTree = "<group>"; };
 		868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerWindowView.swift; sourceTree = "<group>"; };
+		868EF28E2EB4DFDD00E7A496 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		868EF28F2EB4DFDD00E7A496 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		868EF2902EB4DFDD00E7A496 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		868EF2912EB4DFDD00E7A496 /* WaveformTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformTimeline.swift; sourceTree = "<group>"; };
+		868EF2BC2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicAudioVisualizer.swift; sourceTree = "<group>"; };
+		868EF2BD2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicInputModeSelector.swift; sourceTree = "<group>"; };
+		868EF2BE2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicLanguageSelector.swift; sourceTree = "<group>"; };
+		868EF2BF2EB56E0800E7A496 /* NeumorphicLibraryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicLibraryButton.swift; sourceTree = "<group>"; };
+		868EF2C02EB56E0800E7A496 /* NeumorphicPlaybackControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicPlaybackControls.swift; sourceTree = "<group>"; };
+		868EF2C12EB56E0800E7A496 /* NeumorphicRecordingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicRecordingButton.swift; sourceTree = "<group>"; };
+		868EF2C22EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicRotaryPlayButton.swift; sourceTree = "<group>"; };
+		868EF2C32EB56E0800E7A496 /* NeumorphicStatusBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeumorphicStatusBanner.swift; sourceTree = "<group>"; };
 		BB22222222222222 /* AudioTextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTextApp.swift; sourceTree = "<group>"; };
 		BB22222222222223 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB22222222222224 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -116,6 +152,18 @@
 		FF66666666666666 /* AudioText */ = {
 			isa = PBXGroup;
 			children = (
+				868EF2BC2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift */,
+				868EF2BD2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift */,
+				868EF2BE2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift */,
+				868EF2BF2EB56E0800E7A496 /* NeumorphicLibraryButton.swift */,
+				868EF2C02EB56E0800E7A496 /* NeumorphicPlaybackControls.swift */,
+				868EF2C12EB56E0800E7A496 /* NeumorphicRecordingButton.swift */,
+				868EF2C22EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift */,
+				868EF2C32EB56E0800E7A496 /* NeumorphicStatusBanner.swift */,
+				868EF28E2EB4DFDD00E7A496 /* DesignSystem.swift */,
+				868EF28F2EB4DFDD00E7A496 /* HapticManager.swift */,
+				868EF2902EB4DFDD00E7A496 /* MainTabView.swift */,
+				868EF2912EB4DFDD00E7A496 /* WaveformTimeline.swift */,
 				868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */,
 				868EF23C2EAFAAA700E7A496 /* PlayerWindowView.swift */,
 				868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */,
@@ -310,7 +358,19 @@
 				AA55555555555553 /* ExportManager.swift in Sources */,
 				AA11111111111130 /* AudioRecorder.swift in Sources */,
 				AA11111111111131 /* AudioPlayer.swift in Sources */,
+				868EF2922EB4DFDD00E7A496 /* MainTabView.swift in Sources */,
+				868EF2932EB4DFDD00E7A496 /* DesignSystem.swift in Sources */,
+				868EF2942EB4DFDD00E7A496 /* HapticManager.swift in Sources */,
+				868EF2952EB4DFDD00E7A496 /* WaveformTimeline.swift in Sources */,
 				AA11111111111132 /* SpeechRecognizer.swift in Sources */,
+				868EF2C42EB56E0800E7A496 /* NeumorphicInputModeSelector.swift in Sources */,
+				868EF2C52EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */,
+				868EF2C62EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift in Sources */,
+				868EF2C72EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */,
+				868EF2C82EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */,
+				868EF2C92EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */,
+				868EF2CA2EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */,
+				868EF2CB2EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */,
 				AA11111111111133 /* OpenAIService.swift in Sources */,
 				AA11111111111145 /* TranscriptionResult.swift in Sources */,
 				AA11111111111125 /* RecordingFile.swift in Sources */,
@@ -338,7 +398,19 @@
 				AA55555555555552 /* ExportManager.swift in Sources */,
 				AA11111111111126 /* AudioRecorder.swift in Sources */,
 				AA11111111111127 /* AudioPlayer.swift in Sources */,
+				868EF2962EB4DFDD00E7A496 /* MainTabView.swift in Sources */,
+				868EF2972EB4DFDD00E7A496 /* DesignSystem.swift in Sources */,
+				868EF2982EB4DFDD00E7A496 /* HapticManager.swift in Sources */,
+				868EF2992EB4DFDD00E7A496 /* WaveformTimeline.swift in Sources */,
 				AA11111111111128 /* SpeechRecognizer.swift in Sources */,
+				868EF2CC2EB56E0800E7A496 /* NeumorphicInputModeSelector.swift in Sources */,
+				868EF2CD2EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */,
+				868EF2CE2EB56E0800E7A496 /* NeumorphicAudioVisualizer.swift in Sources */,
+				868EF2CF2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */,
+				868EF2D02EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */,
+				868EF2D12EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */,
+				868EF2D22EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */,
+				868EF2D32EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */,
 				AA11111111111129 /* OpenAIService.swift in Sources */,
 				AA11111111111144 /* TranscriptionResult.swift in Sources */,
 				AA11111111111124 /* RecordingFile.swift in Sources */,

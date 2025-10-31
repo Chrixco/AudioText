@@ -1,5 +1,8 @@
 import SwiftUI
 import AVFoundation
+#if os(iOS)
+import MediaPlayer
+#endif
 
 /// Centralised audio playback controller with progress tracking and error reporting.
 @MainActor
@@ -22,6 +25,7 @@ class AudioPlayer: NSObject, ObservableObject {
     override init() {
         super.init()
         setupSession()
+        setupRemoteControls()
     }
 
     private final class ScrubContext {
@@ -36,10 +40,127 @@ class AudioPlayer: NSObject, ObservableObject {
     private func setupSession() {
 #if os(iOS)
         do {
+            // Configure for playback and background audio
+            try audioSession.setCategory(.playback, mode: .default, options: [])
             try audioSession.setActive(true)
+            print("✅ Audio session configured for background playback")
         } catch {
             playbackError = .audioSessionSetupFailed(error)
+            print("❌ Audio session setup failed: \(error)")
         }
+#endif
+    }
+
+    // MARK: - Remote Controls & Now Playing
+
+    private func setupRemoteControls() {
+#if os(iOS)
+        let commandCenter = MPRemoteCommandCenter.shared()
+
+        // Play command
+        commandCenter.playCommand.isEnabled = true
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            Task { @MainActor in
+                self?.resume()
+                HapticManager.shared.playPauseToggle()
+            }
+            return .success
+        }
+
+        // Pause command
+        commandCenter.pauseCommand.isEnabled = true
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor in
+                self?.pause()
+                HapticManager.shared.playPauseToggle()
+            }
+            return .success
+        }
+
+        // Toggle play/pause command
+        commandCenter.togglePlayPauseCommand.isEnabled = true
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor in
+                guard let self = self else { return }
+                if self.isPlaying {
+                    self.pause()
+                } else {
+                    self.resume()
+                }
+                HapticManager.shared.playPauseToggle()
+            }
+            return .success
+        }
+
+        // Skip forward/backward
+        commandCenter.skipForwardCommand.isEnabled = true
+        commandCenter.skipForwardCommand.preferredIntervals = [15]
+        commandCenter.skipForwardCommand.addTarget { [weak self] event in
+            Task { @MainActor in
+                guard let self = self,
+                      let skipEvent = event as? MPSkipIntervalCommandEvent else { return }
+                let newTime = min(self.duration, self.currentTime + skipEvent.interval)
+                self.seek(to: newTime)
+                HapticManager.shared.selection()
+            }
+            return .success
+        }
+
+        commandCenter.skipBackwardCommand.isEnabled = true
+        commandCenter.skipBackwardCommand.preferredIntervals = [15]
+        commandCenter.skipBackwardCommand.addTarget { [weak self] event in
+            Task { @MainActor in
+                guard let self = self,
+                      let skipEvent = event as? MPSkipIntervalCommandEvent else { return }
+                let newTime = max(0, self.currentTime - skipEvent.interval)
+                self.seek(to: newTime)
+                HapticManager.shared.selection()
+            }
+            return .success
+        }
+
+        // Seek command
+        commandCenter.changePlaybackPositionCommand.isEnabled = true
+        commandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+            Task { @MainActor in
+                guard let self = self,
+                      let seekEvent = event as? MPChangePlaybackPositionCommandEvent else { return }
+                self.seek(to: seekEvent.positionTime)
+            }
+            return .success
+        }
+
+        print("✅ Remote controls configured")
+#endif
+    }
+
+    private func updateNowPlayingInfo() {
+#if os(iOS)
+        guard let recording = currentRecording else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            return
+        }
+
+        var nowPlayingInfo = [String: Any]()
+
+        // Title and artist
+        let fileName = recording.fileName.replacingOccurrences(of: ".m4a", with: "")
+        nowPlayingInfo[MPMediaItemPropertyTitle] = fileName
+        nowPlayingInfo[MPMediaItemPropertyArtist] = "AudioText"
+        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = "Recordings"
+
+        // Duration and current time
+        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = duration
+        nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = currentTime
+        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? playbackRate : 0.0
+
+        // Metadata
+        if let transcript = recording.transcript, !transcript.isEmpty {
+            nowPlayingInfo[MPMediaItemPropertyComments] = String(transcript.prefix(100))
+        }
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        print("✅ Now Playing info updated: \(fileName)")
 #endif
     }
 
@@ -88,18 +209,24 @@ class AudioPlayer: NSObject, ObservableObject {
 
         isPlaying = true
         startTimer()
+        HapticManager.shared.playPauseToggle()
+        updateNowPlayingInfo()
     }
 
     func pause() {
         audioPlayer?.pause()
         isPlaying = false
         stopTimer()
+        HapticManager.shared.playPauseToggle()
+        updateNowPlayingInfo()
     }
 
     func resume() {
         audioPlayer?.play()
         isPlaying = true
         startTimer()
+        HapticManager.shared.playPauseToggle()
+        updateNowPlayingInfo()
     }
 
     func stop() async {

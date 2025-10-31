@@ -379,6 +379,15 @@ extension View {
             .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.3), radius: 4, x: 2, y: 2)
             .shadow(color: DesignSystem.Colors.highlightLight.opacity(0.5), radius: 4, x: -2, y: -2)
     }
+
+    // MARK: Multi-Layer Shadow Helper
+
+    /// Applies multiple shadow layers for enhanced neumorphic depth
+    func applyShadows(_ shadows: [(Color, CGFloat, CGFloat, CGFloat)]) -> some View {
+        shadows.reduce(AnyView(self)) { view, shadow in
+            AnyView(view.shadow(color: shadow.0, radius: shadow.1, x: shadow.2, y: shadow.3))
+        }
+    }
 }
 
 // MARK: - Neumorphic Button Styles

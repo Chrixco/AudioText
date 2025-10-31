@@ -13,54 +13,52 @@ struct RotaryKnob: View {
     var centerSubtitle: String? = nil
     var onScrubDelta: ((Double, TimeInterval, Bool) -> Void)? = nil
 
-    private let outerGradient = LinearGradient(
-        colors: [.blue, .cyan],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
-    private let inactiveGradient = LinearGradient(
-        colors: [.gray.opacity(0.7), .gray.opacity(0.4)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    // Both active and inactive use background color for neumorphic effect
+    private let outerGradient = DesignSystem.Colors.buttonGradient
+    private let inactiveGradient = DesignSystem.Colors.buttonGradient
 
     @State private var lastDetentIndex: Int = 0
     @State private var isDragging = false
     @State private var lastScrubValue: Double?
     @State private var lastScrubTime: Date?
+    @State private var dragStartLocation: CGPoint?
+    @State private var cumulativeRotation: Double = 0  // Track total rotation in degrees
+    @State private var lastAngle: Double? = nil  // Track previous angle to detect boundary crossing
+    @State private var lastExternalValue: Double = 0  // Track last value set from binding
 
-    private let detentSpacing: Double = 0.05
-    private let minAngle: Double = -140
-    private let maxAngle: Double = 140
+    private let detentSpacing: Double = 0.02  // Finer detents for smoother haptics
+    private let totalRotationDegrees: Double = 720  // 2 full rotations for entire timeline
 
     var body: some View {
         GeometryReader { proxy in
             let size = min(proxy.size.width, proxy.size.height)
-            let angle = angle(for: value)
             let innerSize = size * 0.45
             let innerRadius = innerSize / 2
+            let visualAngle = visualRotationAngle(for: value)
 
             ZStack {
+                // Outer circle with soft neumorphic depth (reference style)
                 Circle()
-                    .fill(isActive ? outerGradient : inactiveGradient)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.2), lineWidth: size * 0.04)
-                    )
-                    .shadow(color: .black.opacity(0.2), radius: 12, x: 0, y: 8)
+                    .fill(outerGradient)
+                    .shadow(color: DesignSystem.Colors.shadowLight, radius: 12, x: -5, y: -5)
+                    .shadow(color: DesignSystem.Colors.shadowDark, radius: 14, x: 6, y: 6)
 
+                // Middle ring
                 Circle()
-                    .stroke(Color.white.opacity(0.15), lineWidth: size * 0.06)
+                    .stroke(DesignSystem.Colors.highlightLight, lineWidth: size * 0.06)
                     .frame(width: size * 0.84, height: size * 0.84)
 
+                // Inner circle background (soft debossed - reference style)
                 Circle()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(DesignSystem.Colors.background)
                     .frame(width: size * 0.68, height: size * 0.68)
+                    .shadow(color: DesignSystem.Colors.shadowDark, radius: 10, x: 4, y: 4)
+                    .shadow(color: DesignSystem.Colors.shadowLight, radius: 8, x: -3, y: -3)
 
-                RotationGuide()
-                    .stroke(Color.white.opacity(0.75), lineWidth: size * 0.03)
+                RotationGuide(progress: value)
+                    .stroke(DesignSystem.Colors.textPrimary.opacity(0.75), lineWidth: size * 0.03)
                     .frame(width: size * 0.9, height: size * 0.9)
-                    .rotationEffect(.degrees(angle))
+                    .rotationEffect(.degrees(visualAngle))
                     .blur(radius: isActive ? 0 : 3)
 
                 Button(action: {
@@ -73,20 +71,20 @@ struct RotaryKnob: View {
                         if let icon = centerIcon {
                             Image(systemName: icon)
                                 .font(.system(size: innerSize * 0.45, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(isActive ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.textSecondary)
                         }
 
                         if let title = centerTitle, !title.isEmpty {
                             Text(title)
                                 .font(.system(size: innerSize * 0.28, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(DesignSystem.Colors.textPrimary)
                                 .multilineTextAlignment(.center)
                         }
 
                         if let subtitle = centerSubtitle, !subtitle.isEmpty {
                             Text(subtitle)
                                 .font(.system(size: innerSize * 0.2, weight: .medium))
-                                .foregroundStyle(.white.opacity(0.8))
+                                .foregroundStyle(DesignSystem.Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -94,65 +92,101 @@ struct RotaryKnob: View {
                     .frame(width: innerSize, height: innerSize)
                     .background(
                         Circle()
-                            .fill(Color.white.opacity(0.25))
+                            .fill(DesignSystem.Colors.surface)
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(DesignSystem.Colors.highlightLight, lineWidth: 1)
+                            )
                     )
                 }
                 .buttonStyle(.plain)
             }
             .contentShape(Circle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 5)
                     .onChanged { gesture in
                         let location = gesture.location
                         let centre = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
                         let distance = hypot(location.x - centre.x, location.y - centre.y)
 
-                        guard distance > innerRadius else { return }
+                        // Only start if we begin inside the knob, but track it if drag is ongoing
+                        if !isDragging {
+                            guard distance > innerRadius else { return }
+                            dragStartLocation = location
+                            isDragging = true
+                            // Sync cumulative rotation with current value when starting drag
+                            cumulativeRotation = value * totalRotationDegrees
+                            onEditingChanged(true)
+                        }
 
-                        isDragging = true
-                        onEditingChanged(true)
-                        updateValue(with: location, in: proxy, ignoringInnerRadius: innerRadius)
+                        // Once dragging, allow rotation even if finger moves outside
+                        updateValue(with: location, in: proxy, allowOutside: true)
                     }
                     .onEnded { gesture in
+                        let location = gesture.location
+                        updateValue(with: location, in: proxy, allowOutside: true)
+
                         defer {
                             isDragging = false
+                            dragStartLocation = nil
+                            lastAngle = nil
+                            lastExternalValue = value  // Sync tracking with final value
                             onEditingChanged(false)
                             notifyScrubDelta(oldValue: value, newValue: value, ended: true)
                         }
-
-                        let location = gesture.location
-                        let centre = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
-                        let distance = hypot(location.x - centre.x, location.y - centre.y)
-
-                        guard distance > innerRadius else {
-                            return
-                        }
-
-                        updateValue(with: location, in: proxy, ignoringInnerRadius: innerRadius)
                     }
             )
         }
         .aspectRatio(1, contentMode: .fit)
+        .onChange(of: value) { oldValue, newValue in
+            // Sync cumulative rotation when value changes externally (not during drag)
+            if !isDragging && abs(newValue - lastExternalValue) > 0.001 {
+                cumulativeRotation = newValue * totalRotationDegrees
+                lastExternalValue = newValue
+            }
+        }
+        .onAppear {
+            // Initialize cumulative rotation and tracking on appear
+            cumulativeRotation = value * totalRotationDegrees
+            lastExternalValue = value
+        }
     }
 
-    private func updateValue(with location: CGPoint, in proxy: GeometryProxy, ignoringInnerRadius innerRadius: CGFloat? = nil) {
+    private func updateValue(with location: CGPoint, in proxy: GeometryProxy, allowOutside: Bool = false) {
         let centre = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
         let dx = location.x - centre.x
-        let dy = centre.y - location.y
-        let distance = hypot(dx, dy)
-
-        if let innerRadius, distance < innerRadius {
-            return
-        }
+        let dy = location.y - centre.y
 
         let vector = CGVector(dx: dx, dy: dy)
-        let angle = atan2(vector.dy, vector.dx) * 180 / .pi
-        let clampedAngle = max(min(angle, maxAngle), minAngle)
-        let normalised = (clampedAngle - minAngle) / (maxAngle - minAngle)
+        let currentAngle = atan2(vector.dy, vector.dx) * 180 / .pi  // -180 to 180
+
+        // Detect boundary crossing and accumulate rotation
+        if let previousAngle = lastAngle {
+            var delta = currentAngle - previousAngle
+
+            // Detect crossing the -180°/180° boundary
+            if delta > 180 {
+                delta -= 360  // Crossed from 180 to -180 (counterclockwise)
+            } else if delta < -180 {
+                delta += 360  // Crossed from -180 to 180 (clockwise)
+            }
+
+            cumulativeRotation += delta
+        }
+
+        lastAngle = currentAngle
+
+        // Clamp cumulative rotation to 0-720 degrees
+        cumulativeRotation = max(0, min(totalRotationDegrees, cumulativeRotation))
+
+        // Convert cumulative rotation to value (0-1)
         let oldValue = value
-        value = max(0, min(1, normalised))
+        let newValue = cumulativeRotation / totalRotationDegrees
+        value = newValue
+        lastExternalValue = newValue  // Update tracking to prevent onChange from firing
+
         processFeedbackIfNeeded(oldValue: oldValue)
-        notifyScrubDelta(oldValue: oldValue, newValue: value, ended: false)
+        notifyScrubDelta(oldValue: oldValue, newValue: newValue, ended: false)
     }
 
     private func notifyScrubDelta(oldValue: Double, newValue: Double, ended: Bool) {
@@ -189,9 +223,9 @@ struct RotaryKnob: View {
         lastScrubTime = now
     }
 
-    private func angle(for value: Double) -> Double {
+    private func visualRotationAngle(for value: Double) -> Double {
         let clamped = max(0, min(1, value))
-        return minAngle + (maxAngle - minAngle) * clamped
+        return clamped * totalRotationDegrees  // 0-720 degrees
     }
 
     private func processFeedbackIfNeeded(oldValue: Double) {
@@ -199,16 +233,17 @@ struct RotaryKnob: View {
         if newDetent != lastDetentIndex {
             lastDetentIndex = newDetent
             triggerHaptics()
-            if onScrubDelta == nil {
+            // Only play sound on significant movements, not every detent
+            let significantMove = abs(value - oldValue) > 0.05
+            if onScrubDelta == nil && significantMove {
                 playTickSound()
             }
         }
     }
 
     private func triggerHaptics() {
-#if os(iOS)
-        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-#endif
+        // Use HapticManager for consistent, high-quality haptics
+        HapticManager.shared.selection()
     }
 
     private func playTickSound() {
@@ -218,34 +253,46 @@ struct RotaryKnob: View {
     }
 
     private struct RotationGuide: Shape {
+        let progress: Double
+
         func path(in rect: CGRect) -> Path {
             let radius = min(rect.width, rect.height) / 2
             let guideRadius = radius * 0.8
             var path = Path()
 
-            path.addArc(
-                center: CGPoint(x: rect.midX, y: rect.midY),
-                radius: guideRadius,
-                startAngle: .degrees(-160),
-                endAngle: .degrees(160),
-                clockwise: false
-            )
+            // Draw full circle guide
+            path.addEllipse(in: CGRect(
+                x: rect.midX - guideRadius,
+                y: rect.midY - guideRadius,
+                width: guideRadius * 2,
+                height: guideRadius * 2
+            ))
 
-            let tickPositions: [Double] = [-150, -110, -70, -30, 30, 70, 110, 150]
-            let tickRadius = guideRadius
-            let dotSize = guideRadius * 0.12
+            // Add progress indicators - 16 dots around the circle (representing 45° increments)
+            let numberOfDots = 16
+            let dotSize = guideRadius * 0.08
+            let progressDots = Int(progress * Double(numberOfDots * 2))  // *2 because we do 2 rotations
 
-            for position in tickPositions {
-                let angle = Angle.degrees(position)
+            for i in 0..<numberOfDots {
+                let angle = Angle.degrees(Double(i) * 360.0 / Double(numberOfDots) - 90)  // Start at top
                 let point = CGPoint(
-                    x: rect.midX + tickRadius * CGFloat(cos(angle.radians)),
-                    y: rect.midY + tickRadius * CGFloat(sin(angle.radians))
+                    x: rect.midX + guideRadius * CGFloat(cos(angle.radians)),
+                    y: rect.midY + guideRadius * CGFloat(sin(angle.radians))
                 )
+
+                // Calculate if this dot should be filled based on progress through 2 rotations
+                let dotIndex = i
+                let firstLapFilled = progressDots > dotIndex
+                let secondLapFilled = progressDots > (dotIndex + numberOfDots)
+
+                // Draw larger dot if this represents current progress
+                let size = (firstLapFilled && !secondLapFilled) || secondLapFilled ? dotSize * 1.5 : dotSize
+
                 let dotRect = CGRect(
-                    x: point.x - dotSize / 2,
-                    y: point.y - dotSize / 2,
-                    width: dotSize,
-                    height: dotSize
+                    x: point.x - size / 2,
+                    y: point.y - size / 2,
+                    width: size,
+                    height: size
                 )
                 path.addEllipse(in: dotRect)
             }

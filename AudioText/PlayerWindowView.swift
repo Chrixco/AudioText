@@ -17,7 +17,7 @@ struct PlayerWindowView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 20) {
                     if let recording = selectedRecording {
                         recordingSelector
 
@@ -46,7 +46,9 @@ struct PlayerWindowView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
             }
             .navigationTitle("Player")
         }
@@ -109,9 +111,9 @@ struct PlayerWindowView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
         }
-        .frame(maxWidth: .infinity, minHeight: 320)
+        .frame(maxWidth: .infinity, minHeight: 300)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color.secondary.opacity(0.08))
