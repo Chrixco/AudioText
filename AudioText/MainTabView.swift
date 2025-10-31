@@ -360,7 +360,7 @@ struct RecordingView: View {
                 Task { @MainActor in
                     audioRecorder.attachTranscript(text, to: recording)
                     currentTranscription = text
-                    showingTranscription = true
+                    // Don't show transcription automatically - user can view it from Library
                 }
             } catch {
                 Task { @MainActor in
