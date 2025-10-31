@@ -1,17 +1,19 @@
 import SwiftUI
 import Combine
 
-/// Neumorphic audio visualizer with VU meter bars and debossed container
+/// Neumorphic audio visualizer with horizontal white bars on black background
+/// Bars get progressively smaller as they go up (like stacked levels)
 struct NeumorphicAudioVisualizer: View {
     let isActive: Bool
     let levelProvider: () -> Float
 
-    @State private var audioLevels: [Double] = Array(repeating: 0.0, count: 32)
+    @State private var audioLevels: [Double] = Array(repeating: 0.0, count: 16)
     @State private var timerCancellable: AnyCancellable?
 
-    let barCount = 32
-    let barWidth: CGFloat = 6.0
-    let maxBarHeight: CGFloat = 50.0
+    let barCount = 16
+    let barHeight: CGFloat = 4.0
+    let barSpacing: CGFloat = 3.0
+    let maxBarWidth: CGFloat = 280.0
 
     var body: some View {
         VStack(spacing: DesignSystem.Spacing.small) {
@@ -31,20 +33,20 @@ struct NeumorphicAudioVisualizer: View {
             }
             .padding(.horizontal, DesignSystem.Spacing.small)
 
-            // Visualizer bars in black container
-            HStack(spacing: 2) {
-                ForEach(0..<barCount, id: \.self) { index in
-                    NeumorphicAudioBar(
-                        height: audioLevels[index] * maxBarHeight,
-                        width: barWidth,
-                        maxHeight: maxBarHeight
+            // Visualizer bars in black container (horizontal bars)
+            VStack(spacing: barSpacing) {
+                // Bars from top to bottom (index 0 is smallest at top)
+                ForEach((0..<barCount).reversed(), id: \.self) { index in
+                    HorizontalAudioBar(
+                        width: audioLevels[index] * maxBarWidth,
+                        height: barHeight,
+                        barIndex: index,
+                        maxIndex: barCount
                     )
                 }
             }
-            .frame(height: maxBarHeight + 8)
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, DesignSystem.Spacing.small)
-            .padding(.vertical, DesignSystem.Spacing.xSmall)
+            .padding(DesignSystem.Spacing.small)
             .background(
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small, style: .continuous)
                     .fill(Color.black)
@@ -102,56 +104,70 @@ struct NeumorphicAudioVisualizer: View {
 
     private func updateLevels(with newValue: Double) {
         let clamped = max(0, min(1, newValue))
+
+        // Update levels with smooth interpolation
+        // Higher index = higher bar = should activate at higher levels
         for i in 0..<barCount {
-            let variation = sin(Double(i) * 0.1) * 0.3 + 0.7
-            let adjusted = clamped * variation
-            audioLevels[i] = audioLevels[i] * 0.7 + adjusted * 0.3
+            let threshold = Double(i) / Double(barCount)
+            let activation = max(0, clamped - threshold) * Double(barCount)
+            let targetLevel = min(1.0, activation)
+
+            // Smooth interpolation with some variation
+            let variation = sin(Double(i) * 0.2) * 0.1 + 1.0
+            audioLevels[i] = audioLevels[i] * 0.6 + targetLevel * variation * 0.4
         }
     }
 }
 
-// MARK: - Neumorphic Audio Bar
+// MARK: - Horizontal Audio Bar
 
-private struct NeumorphicAudioBar: View {
-    let height: CGFloat
+private struct HorizontalAudioBar: View {
     let width: CGFloat
-    let maxHeight: CGFloat
+    let height: CGFloat
+    let barIndex: Int
+    let maxIndex: Int
 
-    // White bars
-    private var barColor: Color {
-        return Color.white
+    // Calculate max width based on position (smaller bars at top)
+    private var maxBarWidth: CGFloat {
+        let ratio = CGFloat(barIndex + 1) / CGFloat(maxIndex)
+        // Top bars are 40% of bottom bars
+        return 280.0 * (0.4 + (ratio * 0.6))
     }
 
     var body: some View {
-        VStack {
+        HStack(spacing: 0) {
+            // Center-aligned horizontal bar
             Spacer(minLength: 0)
 
-            // Embossed bar with gradient
-            RoundedRectangle(cornerRadius: width / 3, style: .continuous)
+            RoundedRectangle(cornerRadius: height / 2, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [barColor, barColor.opacity(0.7)],
-                        startPoint: .top,
-                        endPoint: .bottom
+                        colors: [
+                            Color.white,
+                            Color.white.opacity(0.9),
+                            Color.white.opacity(0.8)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
                 )
-                .frame(width: width, height: max(height, 2))
+                .frame(width: min(width, maxBarWidth), height: height)
                 .overlay(
-                    RoundedRectangle(cornerRadius: width / 3, style: .continuous)
+                    RoundedRectangle(cornerRadius: height / 2, style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [Color.white.opacity(0.3), Color.clear],
+                                colors: [Color.white.opacity(0.4), Color.clear],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
                 )
-                .shadow(color: barColor.opacity(0.4), radius: 2, x: 0, y: 1)
-                .opacity(height > 2 ? 1.0 : 0.3)
+                .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
+                .opacity(width > 2 ? 1.0 : 0.2)
 
             Spacer(minLength: 0)
         }
-        .frame(maxHeight: maxHeight)
+        .frame(maxWidth: maxBarWidth)
     }
 }
 
