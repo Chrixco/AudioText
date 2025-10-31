@@ -119,7 +119,7 @@ struct RecordingView: View {
                         }
                     )
                 }
-                .padding(.bottom, 16)
+                .padding(.bottom, 32)
                 .background(
                     // Gradient fade to help the button stand out
                     LinearGradient(
