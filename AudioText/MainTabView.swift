@@ -357,14 +357,11 @@ struct LibraryView: View {
                             isPlaying: audioPlayer.currentRecording?.id == recording.id && audioPlayer.isPlaying,
                             onPlayTap: {
                                 playRecording(recording)
-                            }
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if editMode?.wrappedValue.isEditing == false {
+                            },
+                            onTranscriptTap: {
                                 selectedRecordingForDetail = recording
                             }
-                        }
+                        )
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
                                 deleteRecording(recording)
@@ -380,16 +377,6 @@ struct LibraryView: View {
                             .tint(.blue)
                         }
                         .swipeActions(edge: .leading) {
-                            // Transcription button (only if transcript exists)
-                            if recording.transcript != nil {
-                                Button {
-                                    selectedRecordingForDetail = recording
-                                } label: {
-                                    Label("Transcript", systemImage: "doc.text")
-                                }
-                                .tint(.purple)
-                            }
-
                             Button {
                                 renameRecording(recording)
                             } label: {
@@ -535,27 +522,10 @@ private struct RecordingRowView: View {
     let recording: RecordingFile
     var isPlaying: Bool = false
     var onPlayTap: (() -> Void)? = nil
+    var onTranscriptTap: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: 12) {
-            // Play/Pause button
-            Button(action: {
-                onPlayTap?()
-            }) {
-                ZStack {
-                    Circle()
-                        .fill(isPlaying ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.surface)
-                        .frame(width: 44, height: 44)
-                        .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.2), radius: 4, x: 2, y: 2)
-                        .shadow(color: DesignSystem.Colors.shadowLight, radius: 4, x: -2, y: -2)
-
-                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(isPlaying ? .white : DesignSystem.Colors.accentBlue)
-                }
-            }
-            .buttonStyle(.plain)
-
             // Recording info
             VStack(alignment: .leading, spacing: 4) {
                 Text(recording.fileName)
@@ -576,20 +546,49 @@ private struct RecordingRowView: View {
 
             Spacer()
 
-            // Transcript badge
-            if recording.transcript != nil {
-                Image(systemName: "doc.text.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(DesignSystem.Colors.accentPurple)
-                    .padding(.trailing, 4)
-            }
+            // Action Buttons
+            HStack(spacing: 8) {
+                // Show Transcript button
+                if recording.transcript != nil {
+                    Button(action: {
+                        onTranscriptTap?()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.text")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Transcript")
+                                .font(.system(size: 13, weight: .medium))
+                        }
+                        .foregroundStyle(DesignSystem.Colors.accentPurple)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small, style: .continuous)
+                                .fill(DesignSystem.Colors.surface)
+                                .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.15), radius: 2, x: 1, y: 1)
+                                .shadow(color: DesignSystem.Colors.shadowLight, radius: 2, x: -1, y: -1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
 
-            // Currently playing indicator
-            if isPlaying {
-                Image(systemName: "waveform")
-                    .font(.system(size: 16))
-                    .foregroundStyle(DesignSystem.Colors.accentBlue)
-                    .symbolEffect(.variableColor.iterative, isActive: isPlaying)
+                // Play/Pause button
+                Button(action: {
+                    onPlayTap?()
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(isPlaying ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.surface)
+                            .frame(width: 44, height: 44)
+                            .shadow(color: DesignSystem.Colors.shadowDark.opacity(0.2), radius: 4, x: 2, y: 2)
+                            .shadow(color: DesignSystem.Colors.shadowLight, radius: 4, x: -2, y: -2)
+
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(isPlaying ? .white : DesignSystem.Colors.accentBlue)
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(.vertical, 8)
