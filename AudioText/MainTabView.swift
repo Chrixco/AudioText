@@ -28,7 +28,7 @@ struct MainTabView: View {
             .tag(0)
 
             // Tab 2: Library (List of all recordings)
-            LibraryView()
+            LibraryView(selectedTab: $selectedTab)
             .tabItem {
                 Label("Library", systemImage: "music.note.list")
             }
@@ -377,6 +377,7 @@ struct LibraryView: View {
     @EnvironmentObject private var audioRecorder: AudioRecorder
     @EnvironmentObject private var audioPlayer: AudioPlayer
     @Environment(\.editMode) private var editMode
+    @Binding var selectedTab: Int // To switch to player tab
 
     @State private var selectedRecordings: Set<UUID> = []
     @State private var showingRenameAlert = false
@@ -385,7 +386,6 @@ struct LibraryView: View {
     @State private var showingShareSheet = false
     @State private var recordingsToShare: [RecordingFile] = []
     @State private var showingDeleteAlert = false
-    @State private var selectedTab = 0 // To switch to player tab
     @State private var selectedRecordingForDetail: RecordingFile? = nil
 
     var body: some View {
@@ -514,6 +514,8 @@ struct LibraryView: View {
             Task {
                 await audioPlayer.play(recording)
             }
+            // Switch to Player tab to show the player interface
+            selectedTab = 2
         }
         HapticManager.shared.selection()
     }
