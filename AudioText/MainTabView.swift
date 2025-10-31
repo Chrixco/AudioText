@@ -1191,22 +1191,194 @@ private struct EqualizerPanel: View {
     let recording: RecordingFile
     @State var settings: EqualizerSettings
     let onSave: (EqualizerSettings) -> Void
-    @EnvironmentObject private var audioPlayer: AudioPlayer
+
+    // Map 6 bands to 2×3 grid layout
+    private let topRowBands: [EqualizerBand] = [.presence, .air, .preGain]
+    private let bottomRowBands: [EqualizerBand] = [.lowShelf, .bass, .mid]
 
     var body: some View {
-        VStack(spacing: 16) {
-            // Audio Visualizer - 2 rows × 3 bars
-            NeumorphicAudioVisualizer(
-                isActive: audioPlayer.isPlaying && audioPlayer.currentRecording?.id == recording.id,
-                levelProvider: { audioPlayer.currentLevel() }
+        VStack(spacing: DesignSystem.Spacing.medium) {
+            // Title
+            HStack {
+                Text("EQUALIZER")
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(DesignSystem.Colors.textSecondary)
+                    .tracking(1.5)
+
+                Spacer()
+
+                // Reset button
+                Button {
+                    settings = .flat
+                    onSave(settings)
+                    HapticManager.shared.selection()
+                } label: {
+                    Text("RESET")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(DesignSystem.Colors.accentBlue)
+                }
+            }
+            .padding(.horizontal, DesignSystem.Spacing.small)
+
+            // Interactive EQ bars in black container (2 rows of 3 vertical bars)
+            VStack(spacing: 8) {
+                // Top row (thinner bars) - Presence, Air, Output Gain
+                HStack(spacing: 8) {
+                    ForEach(topRowBands, id: \.self) { band in
+                        InteractiveEQBar(
+                            band: band,
+                            value: Binding(
+                                get: { settings.value(for: band) },
+                                set: { newValue in
+                                    settings.setValue(newValue, for: band)
+                                    onSave(settings)
+                                }
+                            ),
+                            rowIndex: 1
+                        )
+                    }
+                }
+
+                // Bottom row (thicker bars) - Low Shelf, Bass, Mid
+                HStack(spacing: 8) {
+                    ForEach(bottomRowBands, id: \.self) { band in
+                        InteractiveEQBar(
+                            band: band,
+                            value: Binding(
+                                get: { settings.value(for: band) },
+                                set: { newValue in
+                                    settings.setValue(newValue, for: band)
+                                    onSave(settings)
+                                }
+                            ),
+                            rowIndex: 0
+                        )
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(DesignSystem.Spacing.medium)
+            .background(
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small, style: .continuous)
+                    .fill(Color.black)
             )
+            .applyShadows(DesignSystem.NeumorphicShadow.deepDebossed())
         }
-        .padding(20)
+        .padding(DesignSystem.Spacing.medium)
         .background(
             RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.large, style: .continuous)
                 .fill(DesignSystem.Colors.surface)
-                .applyShadows(DesignSystem.NeumorphicShadow.mediumDebossed())
+                .applyShadows(DesignSystem.NeumorphicShadow.mediumEmbossed())
         )
+    }
+}
+
+// MARK: - Interactive EQ Bar
+
+private struct InteractiveEQBar: View {
+    let band: EqualizerBand
+    @Binding var value: Double
+    let rowIndex: Int
+
+    @State private var isDragging = false
+
+    // Bar dimensions: thinner bars in top row
+    private var barWidth: CGFloat {
+        rowIndex == 0 ? 28 : 20  // Bottom row: 28pt, Top row: 20pt
+    }
+
+    private let maxBarHeight: CGFloat = 60
+    private let containerHeight: CGFloat = 80
+
+    // Convert gain value (-12 to +12) to bar height position (0 to 1)
+    private var normalizedValue: Double {
+        let range = band.gainRange
+        let normalized = (value - range.lowerBound) / (range.upperBound - range.lowerBound)
+        return max(0, min(1, normalized))
+    }
+
+    private var barHeight: CGFloat {
+        CGFloat(normalizedValue) * maxBarHeight
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            // Label
+            VStack(spacing: 2) {
+                Text(band.title)
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.9))
+                Text(band.frequencyLabel)
+                    .font(.system(size: 7, weight: .regular))
+                    .foregroundStyle(Color.white.opacity(0.6))
+            }
+            .frame(height: 24)
+
+            // Interactive bar container
+            ZStack(alignment: .bottom) {
+                // Background track
+                RoundedRectangle(cornerRadius: barWidth / 3, style: .continuous)
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: barWidth, height: containerHeight)
+
+                // Center line (0 dB marker)
+                Rectangle()
+                    .fill(Color.white.opacity(0.3))
+                    .frame(width: barWidth + 4, height: 1)
+                    .offset(y: -containerHeight / 2)
+
+                // Active bar
+                RoundedRectangle(cornerRadius: barWidth / 3, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white,
+                                Color.white.opacity(0.95),
+                                Color.white.opacity(0.9)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: barWidth, height: barHeight)
+                    .shadow(color: Color.white.opacity(0.5), radius: isDragging ? 4 : 2, x: 0, y: 0)
+                    .offset(y: (containerHeight / 2) - (barHeight / 2) - (containerHeight / 2) * CGFloat(normalizedValue))
+            }
+            .frame(width: barWidth, height: containerHeight)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        if !isDragging {
+                            isDragging = true
+                            HapticManager.shared.selection()
+                        }
+                        updateValue(from: gesture.location.y)
+                    }
+                    .onEnded { _ in
+                        isDragging = false
+                        HapticManager.shared.selection()
+                    }
+            )
+
+            // Value display
+            Text(String(format: "%+.1f dB", value))
+                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.8))
+                .frame(height: 16)
+        }
+    }
+
+    private func updateValue(from yPosition: CGFloat) {
+        // Convert touch position to normalized value (inverted: top = max, bottom = min)
+        let normalized = 1.0 - max(0, min(1, yPosition / containerHeight))
+
+        // Convert to gain value
+        let range = band.gainRange
+        let newValue = range.lowerBound + (normalized * (range.upperBound - range.lowerBound))
+
+        // Round to step
+        let steppedValue = round(newValue / band.step) * band.step
+        value = max(range.lowerBound, min(range.upperBound, steppedValue))
     }
 }
 
