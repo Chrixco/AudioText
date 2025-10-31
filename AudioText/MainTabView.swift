@@ -343,6 +343,7 @@ struct LibraryView: View {
     @State private var recordingsToShare: [RecordingFile] = []
     @State private var showingDeleteAlert = false
     @State private var selectedTab = 0 // To switch to player tab
+    @State private var selectedRecordingForDetail: RecordingFile? = nil
 
     var body: some View {
         NavigationStack {
@@ -358,6 +359,12 @@ struct LibraryView: View {
                                 playRecording(recording)
                             }
                         )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if editMode?.wrappedValue.isEditing == false {
+                                selectedRecordingForDetail = recording
+                            }
+                        }
                         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                             Button(role: .destructive) {
                                 deleteRecording(recording)
@@ -373,6 +380,16 @@ struct LibraryView: View {
                             .tint(.blue)
                         }
                         .swipeActions(edge: .leading) {
+                            // Transcription button (only if transcript exists)
+                            if recording.transcript != nil {
+                                Button {
+                                    selectedRecordingForDetail = recording
+                                } label: {
+                                    Label("Transcript", systemImage: "doc.text")
+                                }
+                                .tint(.purple)
+                            }
+
                             Button {
                                 renameRecording(recording)
                             } label: {
@@ -414,6 +431,11 @@ struct LibraryView: View {
         }
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(items: recordingsToShare.map { $0.fileURL })
+        }
+        .sheet(item: $selectedRecordingForDetail) { recording in
+            RecordingDetailView(recording: recording)
+                .environmentObject(audioPlayer)
+                .environmentObject(audioRecorder)
         }
         .alert("Rename Recording", isPresented: $showingRenameAlert) {
             TextField("Name", text: $renameText)
@@ -554,6 +576,14 @@ private struct RecordingRowView: View {
 
             Spacer()
 
+            // Transcript badge
+            if recording.transcript != nil {
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(DesignSystem.Colors.accentPurple)
+                    .padding(.trailing, 4)
+            }
+
             // Currently playing indicator
             if isPlaying {
                 Image(systemName: "waveform")
@@ -577,25 +607,154 @@ private struct RecordingRowView: View {
 private struct RecordingDetailView: View {
     let recording: RecordingFile
     @EnvironmentObject private var audioPlayer: AudioPlayer
+    @EnvironmentObject private var audioRecorder: AudioRecorder
+    @Environment(\.dismiss) private var dismiss
+
+    private var isPlaying: Bool {
+        audioPlayer.currentRecording?.id == recording.id && audioPlayer.isPlaying
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                Text("Recording Details")
-                    .font(DesignSystem.Typography.headlineSmall)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Recording Info Card
+                    VStack(spacing: 12) {
+                        Image(systemName: "waveform.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(DesignSystem.Colors.accentBlue)
 
-                // Playback controls would go here
-                Button(action: { /* Play/Pause */ }) {
-                    Label("Play", systemImage: "play.fill")
+                        Text(recording.fileName)
+                            .font(DesignSystem.Typography.titleMedium)
+                            .foregroundStyle(DesignSystem.Colors.textPrimary)
+
+                        HStack(spacing: 16) {
+                            Label(formatDuration(recording.duration), systemImage: "clock")
+                            Label(recording.formattedFileSize, systemImage: "doc")
+                        }
+                        .font(DesignSystem.Typography.captionMedium)
+                        .foregroundStyle(DesignSystem.Colors.textSecondary)
+
+                        Text(recording.dateCreated, style: .date)
+                            .font(DesignSystem.Typography.captionMedium)
+                            .foregroundStyle(DesignSystem.Colors.textSecondary)
+                    }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.large, style: .continuous)
+                            .fill(DesignSystem.Colors.surface)
+                            .applyShadows(DesignSystem.NeumorphicShadow.mediumEmbossed())
+                    )
+
+                    // Play Button
+                    Button(action: {
+                        togglePlayback()
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 20, weight: .semibold))
+                            Text(isPlaying ? "Pause" : "Play Recording")
+                                .font(DesignSystem.Typography.bodyLarge)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.button, style: .continuous)
+                                .fill(DesignSystem.Colors.accentBlue)
+                                .applyShadows(DesignSystem.NeumorphicShadow.mediumEmbossed())
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    // Transcript Section
+                    if let transcript = recording.transcript {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "doc.text.fill")
+                                    .foregroundStyle(DesignSystem.Colors.accentPurple)
+                                Text("Transcript")
+                                    .font(DesignSystem.Typography.titleSmall)
+                                    .foregroundStyle(DesignSystem.Colors.textPrimary)
+                                Spacer()
+                            }
+
+                            Text(transcript)
+                                .font(DesignSystem.Typography.bodyMedium)
+                                .foregroundStyle(DesignSystem.Colors.textPrimary)
+                                .textSelection(.enabled)
+                                .padding(16)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                                        .fill(DesignSystem.Colors.background)
+                                        .applyShadows(DesignSystem.NeumorphicShadow.mediumDebossed())
+                                )
+                        }
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.large, style: .continuous)
+                                .fill(DesignSystem.Colors.surface)
+                                .applyShadows(DesignSystem.NeumorphicShadow.mediumEmbossed())
+                        )
+                    } else {
+                        // No transcript available
+                        VStack(spacing: 12) {
+                            Image(systemName: "text.badge.xmark")
+                                .font(.system(size: 40))
+                                .foregroundStyle(DesignSystem.Colors.textTertiary)
+                            Text("No Transcript Available")
+                                .font(DesignSystem.Typography.bodyMedium)
+                                .foregroundStyle(DesignSystem.Colors.textSecondary)
+                            Text("Transcription was not performed for this recording")
+                                .font(DesignSystem.Typography.captionMedium)
+                                .foregroundStyle(DesignSystem.Colors.textTertiary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(32)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.large, style: .continuous)
+                                .fill(DesignSystem.Colors.surface)
+                                .applyShadows(DesignSystem.NeumorphicShadow.mediumEmbossed())
+                        )
+                    }
                 }
-                .buttonStyle(NeumorphicAccentButtonStyle(accentColor: DesignSystem.Colors.accentBlue))
-                .padding(.horizontal)
+                .padding(20)
             }
-            .padding()
+            .background(DesignSystem.Colors.background)
+            .navigationTitle("Recording Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
         }
-        .navigationTitle(recording.fileName)
-        .navigationBarTitleDisplayMode(.inline)
-        .background(DesignSystem.Colors.background)
+    }
+
+    private func togglePlayback() {
+        if audioPlayer.currentRecording?.id == recording.id {
+            if audioPlayer.isPlaying {
+                audioPlayer.pause()
+            } else {
+                audioPlayer.resume()
+            }
+        } else {
+            Task {
+                await audioPlayer.play(recording)
+            }
+        }
+        HapticManager.shared.selection()
+    }
+
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        let seconds = Int(duration) % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
 
