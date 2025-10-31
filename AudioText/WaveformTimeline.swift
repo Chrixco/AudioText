@@ -29,14 +29,15 @@ struct WaveformTimeline: View {
                     ForEach(0..<waveformData.count, id: \.self) { index in
                         WaveformBar(
                             amplitude: CGFloat(waveformData[index]),
-                            maxHeight: geometry.size.height - 16,
+                            maxHeight: geometry.size.height - 24,
                             isPast: barIsPast(index: index, totalBars: waveformData.count, progress: progress),
                             isPlaying: isPlaying
                         )
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, DesignSystem.Spacing.medium)
+                .padding(.vertical, DesignSystem.Spacing.small)
 
                 // Playhead indicator
                 if !waveformData.isEmpty {
@@ -51,15 +52,16 @@ struct WaveformTimeline: View {
                 if isLoadingWaveform {
                     VStack {
                         ProgressView()
+                            .tint(Color.white)
                         Text("Loading waveform...")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.white.opacity(0.6))
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if waveformData.isEmpty {
                     Text("Waveform")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white.opacity(0.6))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
