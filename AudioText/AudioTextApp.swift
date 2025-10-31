@@ -9,8 +9,21 @@ struct AudioTextApp: App {
     @StateObject private var openAIService = OpenAIService()
 
     var body: some Scene {
-        // Main Recording Window
+        // Main Window - iOS uses TabView, macOS uses ContentView
         WindowGroup(id: "main") {
+#if os(iOS)
+            MainTabView()
+                .environmentObject(audioRecorder)
+                .environmentObject(audioPlayer)
+                .environmentObject(speechRecognizer)
+                .environmentObject(openAIService)
+                .onAppear {
+                    // Add a small delay to ensure the app is fully loaded
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        requestPermissions()
+                    }
+                }
+#else
             ContentView()
                 .environmentObject(audioRecorder)
                 .environmentObject(audioPlayer)
@@ -22,6 +35,7 @@ struct AudioTextApp: App {
                         requestPermissions()
                     }
                 }
+#endif
         }
 
         // Settings Window

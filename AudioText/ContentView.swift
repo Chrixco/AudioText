@@ -55,18 +55,71 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            recordPanel
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .background(backgroundColor)
-                .navigationTitle("AudioText")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        settingsMenu
+            ZStack(alignment: .bottom) {
+                // Main scrollable content
+                ScrollView(showsIndicators: false) {
+                    ScrollViewReader { proxy in
+                        recordPanel
+                            .id("recordPanel")
+                            .onChange(of: audioRecorder.isRecording) { _, isRecording in
+                                if isRecording {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        proxy.scrollTo("recordPanel", anchor: .top)
+                                    }
+                                }
+                            }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(backgroundColor)
+
+                // Fixed bottom section: Recording button stacked on top of library button
+                VStack(spacing: 16) {
+                    // Recording button
+                    NeumorphicRecordingButton(
+                        isRecording: audioRecorder.isRecording,
+                        action: {
+                            if audioRecorder.isRecording {
+                                HapticManager.shared.recordingStop()
+                            } else {
+                                HapticManager.shared.recordingStart()
+                            }
+                            toggleRecording()
+                        }
+                    )
+
+                    // Library button anchored to bottom
+                    libraryButton
+                        .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 16)
+                .background(
+                    // Gradient fade to help the button stand out
+                    LinearGradient(
+                        colors: [
+                            DesignSystem.Colors.background.opacity(0),
+                            DesignSystem.Colors.background.opacity(0.95),
+                            DesignSystem.Colors.background
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 200)
+                    .offset(y: -100)
+                )
+            }
+            .navigationTitle("AudioText")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    settingsMenu
+                }
+            }
+            .toolbarBackground(DesignSystem.Colors.surface, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
         .background(backgroundColor)
+        .preferredColorScheme(.light)
 #if os(iOS)
         // iOS uses fullscreen for Library/Player, sheets for Settings
         .fullScreenCover(isPresented: $showingLibrarySheet) {
@@ -156,15 +209,11 @@ struct ContentView: View {
     }
 
     private var backgroundColor: Color {
-#if os(iOS)
-        Color(uiColor: .systemBackground)
-#else
-        Color(nsColor: .windowBackgroundColor)
-#endif
+        DesignSystem.Colors.background
     }
 
     private var recordPanel: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: audioRecorder.isRecording ? 8 : 12) {
             statusBanner
 #if os(iOS)
             languageInputStack
@@ -176,65 +225,47 @@ struct ContentView: View {
             }
 
             recordingHelperText
-            libraryButton
 
-            Spacer(minLength: 0)
+            // Add spacer to push content above the fixed bottom section
+            Spacer(minLength: 240) // Height for record button + library button
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 24)
+        .padding(.horizontal, 16)
+        .padding(.top, audioRecorder.isRecording ? 4 : 8)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity)
     }
 
     private var statusInfo: (title: String, subtitle: String?, color: Color, icon: String) {
         if audioRecorder.isRecording {
-            return ("Recording in progress", "Tap stop when you're done.", .red, "record.circle")
+            return ("Recording in progress", "Tap stop when you're done.", DesignSystem.Colors.recording, "record.circle")
         }
 
         if isProcessingTranscription {
-            return ("Transcribing latest clip…", "You can keep capturing new notes.", .blue, "waveform")
+            return ("Transcribing latest clip…", "You can keep capturing new notes.", DesignSystem.Colors.accentPurple, "waveform")
         }
 
         if !currentTranscription.isEmpty {
-            return ("Latest transcription ready", "Preview or share it below.", .green, "checkmark.seal")
+            return ("Latest transcription ready", "Preview or share it below.", DesignSystem.Colors.success, "checkmark.seal")
         }
 
-        return ("Ready to capture audio", "Adjust input and tap the mic to begin.", Color.accentColor, "mic.circle")
+        return ("Ready to capture audio", "Adjust input and tap the mic to begin.", DesignSystem.Colors.accentBlue, "mic.circle")
     }
 
     private var statusBanner: some View {
         let info = statusInfo
-        return HStack(alignment: .center, spacing: 12) {
-            Image(systemName: info.icon)
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(info.color)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(info.title)
-                    .font(.headline)
-                if let subtitle = info.subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Spacer()
-        }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(info.color.opacity(0.12))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(info.color.opacity(0.2), lineWidth: 1)
+        return NeumorphicStatusBanner(
+            icon: info.icon,
+            title: info.title,
+            subtitle: info.subtitle,
+            color: info.color,
+            isRecording: audioRecorder.isRecording
         )
     }
 
 #if os(iOS)
     @ViewBuilder
     private var languageInputStack: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             languageSelector
             inputModeSelector
         }
@@ -244,15 +275,17 @@ struct ContentView: View {
     private var transcriptionChip: some View {
         Button {
             showingTranscription = true
+            HapticManager.shared.buttonTap()
         } label: {
             Label("View latest transcription", systemImage: "text.bubble")
-                .font(.subheadline.bold())
-                .padding(.vertical, 10)
-                .padding(.horizontal, 16)
+                .font(DesignSystem.Typography.bodySmall)
+                .padding(.vertical, DesignSystem.Spacing.xSmall)
+                .padding(.horizontal, DesignSystem.Spacing.large)
                 .background(
                     Capsule()
-                        .fill(Color.blue.opacity(0.15))
+                        .fill(DesignSystem.Colors.accentBlue.opacity(0.15))
                 )
+                .foregroundStyle(DesignSystem.Colors.accentBlue)
         }
         .buttonStyle(.plain)
     }
@@ -262,48 +295,38 @@ struct ContentView: View {
         if audioRecorder.isRecording {
             message = "Recording… tap the center button when you're finished."
         } else if isProcessingTranscription {
-            message = "We’re preparing the last transcript while you get ready for the next clip."
+            message = "We're preparing the last transcript while you get ready for the next clip."
         } else {
             message = "Tap the mic to start a new note. Rotate the knob to scrub during playback."
         }
 
         return Text(message)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .font(DesignSystem.Typography.bodySmall)
+            .foregroundStyle(DesignSystem.Colors.textSecondary)
             .multilineTextAlignment(.center)
+            .lineLimit(3)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
+            .padding(.horizontal, 4)
     }
 
     private var libraryButton: some View {
-        Button {
+        NeumorphicLibraryButton(
+            recordingCount: audioRecorder.recordings.count,
+            action: {
 #if os(macOS)
-            openWindow(id: "library")
+                openWindow(id: "library")
 #else
-            filesSubpanel = .list
-            showingLibrarySheet = true
+                filesSubpanel = .list
+                showingLibrarySheet = true
 #endif
-        } label: {
-            Label("Library", systemImage: "music.note.list")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(LinearGradient(
-                            colors: [Color.accentColor.opacity(0.9), Color.accentColor.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                )
-                .foregroundStyle(Color.white)
-        }
-        .buttonStyle(.plain)
-        .shadow(color: Color.accentColor.opacity(0.25), radius: 10, x: 0, y: 6)
+            }
+        )
     }
 
     private var filesListView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 20) {
                 Label("Library", systemImage: "music.note.list")
                     .font(.title2.weight(.semibold))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -311,7 +334,7 @@ struct ContentView: View {
                 if audioRecorder.recordings.isEmpty {
                     filesPanelEmptyState
                 } else {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         ForEach(audioRecorder.recordings) { recording in
                             RecordingListRow(
                                 recording: recording,
@@ -349,12 +372,15 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
         }
     }
 
     private var filesEqualizerView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 20) {
                 Label("Player", systemImage: "play.circle")
                     .font(.title2.weight(.semibold))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -381,7 +407,7 @@ struct ContentView: View {
                         }
                     )
                 } else {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         Image(systemName: "waveform")
                             .font(.system(size: 60, weight: .semibold))
                             .foregroundStyle(.secondary)
@@ -391,9 +417,9 @@ struct ContentView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
+                            .padding(.horizontal, 24)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 320)
+                    .frame(maxWidth: .infinity, minHeight: 300)
                     .background(
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
                             .fill(Color.secondary.opacity(0.08))
@@ -401,6 +427,9 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
         }
     }
 
@@ -452,7 +481,7 @@ struct ContentView: View {
     @ViewBuilder
     private var filesSheetBase: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 filesSubpanelPicker
 
                 Group {
@@ -466,8 +495,9 @@ struct ContentView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
             .background(backgroundColor)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -489,46 +519,27 @@ struct ContentView: View {
     }
 
     private var audioVisualizerView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: DesignSystem.Spacing.small) {
+            // Neumorphic Audio Visualizer
             if audioRecorder.isRecording {
-                AudioVisualizer(
+                NeumorphicAudioVisualizer(
                     isActive: audioRecorder.isRecording,
                     levelProvider: { audioRecorder.currentLevel() }
                 )
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.black.opacity(0.08))
-                    )
-                    .padding(.horizontal, 32)
-            }
 
-            Button(action: toggleRecording) {
-                VStack(spacing: audioRecorder.isRecording ? 4 : 8) {
-                    Image(systemName: audioRecorder.isRecording ? "stop.fill" : "mic.fill")
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundStyle(.white)
-                    Text(audioRecorder.isRecording ? "Stop" : "Record")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                    if audioRecorder.isRecording {
-                        Text(formattedRecordingTime)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.9))
-                            .monospacedDigit()
-                    }
-                }
-                .frame(width: 150, height: 150)
-                .background(audioRecorder.isRecording ? .red : .blue)
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                // Recording time
+                Text(formattedRecordingTime)
+                    .font(DesignSystem.Typography.monoMedium)
+                    .foregroundStyle(DesignSystem.Colors.textPrimary)
+                    .monospacedDigit()
+                    .padding(.top, DesignSystem.Spacing.xxSmall)
             }
-            .accessibilityLabel(audioRecorder.isRecording ? "Stop recording" : "Start recording")
         }
     }
 
 #if os(iOS)
     private var inputModeSelector: some View {
-        InputModeSelectorView(
+        NeumorphicInputModeSelector(
             selectedMode: audioRecorder.inputMode,
             isExternalAvailable: audioRecorder.isExternalInputAvailable,
             isBluetoothAvailable: audioRecorder.isBluetoothAvailable,
@@ -537,40 +548,10 @@ struct ContentView: View {
     }
 
     private var languageSelector: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Language")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Menu {
-                let options = availableLanguageOptions
-                ForEach(options) { option in
-                    Button(option.label) {
-                        selectedLanguageCode = option.code
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(languageLabel(for: selectedLanguageCode))
-                        .font(.headline)
-                    Spacer()
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.blue.opacity(0.08))
-                )
-            }
-
-            Text(languageHelperText)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
+        NeumorphicLanguageSelector(
+            selectedLanguageCode: $selectedLanguageCode,
+            availableOptions: availableLanguageOptions
+        )
     }
 
     private var availableLanguageOptions: [LanguageOption] {
@@ -785,17 +766,25 @@ struct TranscriptionView: View {
         NavigationView {
             ScrollView {
                 Text(transcription.isEmpty ? "No transcription available yet." : transcription)
+                    .font(DesignSystem.Typography.bodyMedium)
+                    .foregroundStyle(DesignSystem.Colors.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
+                    .padding(.horizontal, DesignSystem.Spacing.large)
+                    .padding(.vertical, DesignSystem.Spacing.medium)
             }
+            .background(DesignSystem.Colors.background)
             .navigationTitle("Transcription")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done", action: dismiss.callAsFunction)
+                        .foregroundStyle(DesignSystem.Colors.accentBlue)
                 }
             }
+            .toolbarBackground(DesignSystem.Colors.surface, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
         }
+        .preferredColorScheme(.light)
     }
 }
 
@@ -807,43 +796,58 @@ private struct InputModeSelectorView: View {
     let onSelect: (AudioInputMode) -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DesignSystem.Spacing.medium) {
             ForEach(AudioInputMode.allCases) { mode in
-                let enabled = isModeEnabled(mode)
-                Button {
-                    if enabled {
-                        onSelect(mode)
-                    }
-                } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: mode.iconName)
-                            .font(.system(size: 20, weight: .semibold))
-                        Text(mode.title)
-                            .font(.caption2)
-                    }
-                    .foregroundStyle(.white)
-                    .frame(width: 68, height: 68)
-                    .background(
-                        Circle()
-                            .fill(background(for: mode, enabled: enabled))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                    )
-                    .opacity(enabled ? 1 : 0.4)
-                    .scaleEffect(selectedMode == mode ? 1.05 : 1.0)
-                    .shadow(color: selectedMode == mode ? Color.blue.opacity(0.3) : Color.clear, radius: 10, x: 0, y: 6)
-                }
-                .buttonStyle(.plain)
-                .disabled(!enabled)
+                inputModeButton(mode: mode)
             }
         }
-        .padding(12)
+        .padding(.horizontal, DesignSystem.Spacing.small)
+        .padding(.vertical, DesignSystem.Spacing.xSmall)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.blue.opacity(0.08))
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium, style: .continuous)
+                .fill(DesignSystem.Colors.surface)
         )
+    }
+
+    @ViewBuilder
+    private func inputModeButton(mode: AudioInputMode) -> some View {
+        let enabled = isModeEnabled(mode)
+        let isSelected = selectedMode == mode
+
+        Button {
+            if enabled {
+                onSelect(mode)
+                HapticManager.shared.selection()
+            }
+        } label: {
+            VStack(spacing: DesignSystem.Spacing.xxSmall) {
+                Image(systemName: mode.iconName)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(iconColor(for: mode))
+                Text(mode.title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(DesignSystem.Colors.textPrimary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.85)
+            }
+            .frame(width: 60, height: 60)
+            .background(
+                Circle()
+                    .fill(background(for: mode, enabled: enabled))
+            )
+            .overlay(
+                Circle()
+                    .stroke(DesignSystem.Colors.highlightLight, lineWidth: 1)
+            )
+            .opacity(enabled ? 1 : 0.6)
+            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .shadow(color: DesignSystem.Colors.shadowLight, radius: 8, x: -3, y: -3)
+            .shadow(color: DesignSystem.Colors.shadowDark, radius: 10, x: 4, y: 4)
+            .shadow(color: isSelected ? DesignSystem.Colors.accentBlue.opacity(0.3) : Color.clear, radius: 6, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
     }
 
     private func isModeEnabled(_ mode: AudioInputMode) -> Bool {
@@ -858,16 +862,28 @@ private struct InputModeSelectorView: View {
     }
 
     private func background(for mode: AudioInputMode, enabled: Bool) -> LinearGradient {
-        if selectedMode == mode {
-            return LinearGradient(colors: [.blue, .cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
-        } else {
-            let opacity: Double = enabled ? 0.4 : 0.2
-            return LinearGradient(colors: [Color.gray.opacity(opacity + 0.1), Color.gray.opacity(opacity)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        // All buttons use background color for neumorphic effect
+        return DesignSystem.Colors.buttonGradient
+    }
+
+    private func iconColor(for mode: AudioInputMode) -> Color {
+        // Assign different Apple colors to each mode
+        switch mode {
+        case .builtIn:
+            return DesignSystem.Colors.accentBlue // Blue for built-in mic
+        case .external:
+            return DesignSystem.Colors.accentOrange // Orange for external
+        case .automatic:
+            return DesignSystem.Colors.accentGreen // Green for automatic
         }
     }
 }
 #endif
 
-#Preview {
+#Preview("ContentView - Main Recording Screen") {
     ContentView()
+        .environmentObject(AudioRecorder())
+        .environmentObject(AudioPlayer())
+        .environmentObject(SpeechRecognizer())
+        .environmentObject(OpenAIService())
 }
