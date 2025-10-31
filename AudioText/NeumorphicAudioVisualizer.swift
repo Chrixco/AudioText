@@ -1,19 +1,17 @@
 import SwiftUI
 import Combine
 
-/// Neumorphic audio visualizer with horizontal white bars on black background
-/// Bars get progressively smaller as they go up (like stacked levels)
+/// Neumorphic audio visualizer - 2 rows × 3 vertical bars on black background
+/// Bars get progressively thinner as they go higher
 struct NeumorphicAudioVisualizer: View {
     let isActive: Bool
     let levelProvider: () -> Float
 
-    @State private var audioLevels: [Double] = Array(repeating: 0.0, count: 16)
+    @State private var audioLevels: [Double] = Array(repeating: 0.0, count: 6)
     @State private var timerCancellable: AnyCancellable?
 
-    let barCount = 16
-    let barHeight: CGFloat = 4.0
-    let barSpacing: CGFloat = 3.0
-    let maxBarWidth: CGFloat = 280.0
+    let totalBars = 6  // 2 rows × 3 bars
+    let barsPerRow = 3
 
     var body: some View {
         VStack(spacing: DesignSystem.Spacing.small) {
@@ -33,20 +31,32 @@ struct NeumorphicAudioVisualizer: View {
             }
             .padding(.horizontal, DesignSystem.Spacing.small)
 
-            // Visualizer bars in black container (horizontal bars)
-            VStack(spacing: barSpacing) {
-                // Bars from top to bottom (index 0 is smallest at top)
-                ForEach((0..<barCount).reversed(), id: \.self) { index in
-                    HorizontalAudioBar(
-                        width: audioLevels[index] * maxBarWidth,
-                        height: barHeight,
-                        barIndex: index,
-                        maxIndex: barCount
-                    )
+            // Visualizer bars in black container (2 rows of 3 vertical bars)
+            VStack(spacing: 8) {
+                // Top row (indices 3, 4, 5) - thinner bars
+                HStack(spacing: 8) {
+                    ForEach(barsPerRow..<totalBars, id: \.self) { index in
+                        VerticalAudioBar(
+                            level: audioLevels[index],
+                            barIndex: index - barsPerRow,
+                            rowIndex: 1
+                        )
+                    }
+                }
+
+                // Bottom row (indices 0, 1, 2) - thicker bars
+                HStack(spacing: 8) {
+                    ForEach(0..<barsPerRow, id: \.self) { index in
+                        VerticalAudioBar(
+                            level: audioLevels[index],
+                            barIndex: index,
+                            rowIndex: 0
+                        )
+                    }
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(DesignSystem.Spacing.small)
+            .padding(DesignSystem.Spacing.medium)
             .background(
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small, style: .continuous)
                     .fill(Color.black)
@@ -98,7 +108,7 @@ struct NeumorphicAudioVisualizer: View {
 
         // Smoothly fall back to silence
         withAnimation(.easeOut(duration: 0.2)) {
-            audioLevels = Array(repeating: 0.0, count: barCount)
+            audioLevels = Array(repeating: 0.0, count: totalBars)
         }
     }
 
@@ -106,54 +116,56 @@ struct NeumorphicAudioVisualizer: View {
         let clamped = max(0, min(1, newValue))
 
         // Update levels with smooth interpolation
-        // Higher index = higher bar = should activate at higher levels
-        for i in 0..<barCount {
-            let threshold = Double(i) / Double(barCount)
-            let activation = max(0, clamped - threshold) * Double(barCount)
-            let targetLevel = min(1.0, activation)
+        // Each bar responds to audio with some variation
+        for i in 0..<totalBars {
+            let variation = sin(Double(i) * 0.3) * 0.2 + 0.8
+            let targetLevel = clamped * variation
 
-            // Smooth interpolation with some variation
-            let variation = sin(Double(i) * 0.2) * 0.1 + 1.0
-            audioLevels[i] = audioLevels[i] * 0.6 + targetLevel * variation * 0.4
+            // Smooth interpolation with different speeds for each bar
+            let smoothing = 0.65 + (Double(i) * 0.02)
+            audioLevels[i] = audioLevels[i] * smoothing + targetLevel * (1 - smoothing)
         }
     }
 }
 
-// MARK: - Horizontal Audio Bar
+// MARK: - Vertical Audio Bar
 
-private struct HorizontalAudioBar: View {
-    let width: CGFloat
-    let height: CGFloat
+private struct VerticalAudioBar: View {
+    let level: Double
     let barIndex: Int
-    let maxIndex: Int
+    let rowIndex: Int
 
-    // Calculate max width based on position (smaller bars at top)
-    private var maxBarWidth: CGFloat {
-        let ratio = CGFloat(barIndex + 1) / CGFloat(maxIndex)
-        // Top bars are 40% of bottom bars
-        return 280.0 * (0.4 + (ratio * 0.6))
+    // Bar dimensions: thinner bars in top row
+    private var barWidth: CGFloat {
+        rowIndex == 0 ? 28 : 20  // Bottom row: 28pt, Top row: 20pt
+    }
+
+    private let maxBarHeight: CGFloat = 60
+
+    private var barHeight: CGFloat {
+        max(2, level * maxBarHeight)
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Center-aligned horizontal bar
+        VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            RoundedRectangle(cornerRadius: height / 2, style: .continuous)
+            // White vertical bar
+            RoundedRectangle(cornerRadius: barWidth / 3, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [
                             Color.white,
-                            Color.white.opacity(0.9),
-                            Color.white.opacity(0.8)
+                            Color.white.opacity(0.95),
+                            Color.white.opacity(0.9)
                         ],
-                        startPoint: .leading,
-                        endPoint: .trailing
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                 )
-                .frame(width: min(width, maxBarWidth), height: height)
+                .frame(width: barWidth, height: barHeight)
                 .overlay(
-                    RoundedRectangle(cornerRadius: height / 2, style: .continuous)
+                    RoundedRectangle(cornerRadius: barWidth / 3, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [Color.white.opacity(0.4), Color.clear],
@@ -162,12 +174,10 @@ private struct HorizontalAudioBar: View {
                             )
                         )
                 )
-                .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0)
-                .opacity(width > 2 ? 1.0 : 0.2)
-
-            Spacer(minLength: 0)
+                .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 0)
+                .opacity(barHeight > 2 ? 1.0 : 0.3)
         }
-        .frame(maxWidth: maxBarWidth)
+        .frame(maxWidth: barWidth, maxHeight: maxBarHeight)
     }
 }
 
