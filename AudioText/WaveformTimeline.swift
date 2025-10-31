@@ -86,6 +86,7 @@ struct WaveformTimeline: View {
                     }
             )
         }
+        .frame(maxWidth: .infinity)
         .frame(height: 80)
         .task(id: recording.id) {
             await loadWaveform()
