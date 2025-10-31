@@ -19,11 +19,10 @@ struct WaveformTimeline: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
-                // Background - Soft debossed/inset (reference style)
+                // Background - Black with debossed shadow
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
-                    .fill(DesignSystem.Colors.background)
-                    .shadow(color: DesignSystem.Colors.shadowDark, radius: 10, x: 4, y: 4)
-                    .shadow(color: DesignSystem.Colors.shadowLight, radius: 8, x: -3, y: -3)
+                    .fill(Color.black)
+                    .applyShadows(DesignSystem.NeumorphicShadow.deepDebossed())
 
                 // Waveform bars
                 HStack(alignment: .center, spacing: barSpacing) {
@@ -164,9 +163,9 @@ private struct WaveformBar: View {
 
     private var barColor: Color {
         if isPast {
-            return isPlaying ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.accentBlue.opacity(0.6)
+            return isPlaying ? Color.white : Color.white.opacity(0.8)
         } else {
-            return DesignSystem.Colors.textTertiary.opacity(0.3)
+            return Color.white.opacity(0.3)
         }
     }
 
@@ -202,19 +201,19 @@ private struct PlayheadIndicator: View {
         ZStack {
             // Vertical line
             Rectangle()
-                .fill(DesignSystem.Colors.accentBlue)
+                .fill(Color.white)
                 .frame(width: 2)
 
             // Top circle
             Circle()
-                .fill(DesignSystem.Colors.accentBlue)
+                .fill(Color.white)
                 .frame(width: 8, height: 8)
                 .offset(y: -36)
 
             // Glow effect when playing
             if isPlaying {
                 Circle()
-                    .fill(DesignSystem.Colors.accentBlue.opacity(0.3))
+                    .fill(Color.white.opacity(0.5))
                     .frame(width: 16, height: 16)
                     .offset(y: -36)
                     .blur(radius: 4)
