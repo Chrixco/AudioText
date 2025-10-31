@@ -18,24 +18,30 @@ struct WaveformTimeline: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .leading) {
+            ZStack(alignment: .center) {
                 // Background - Black with debossed shadow
                 RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
                     .fill(Color.black)
                     .applyShadows(DesignSystem.NeumorphicShadow.deepDebossed())
 
-                // Waveform bars
-                HStack(alignment: .center, spacing: barSpacing) {
-                    ForEach(0..<waveformData.count, id: \.self) { index in
-                        WaveformBar(
-                            amplitude: CGFloat(waveformData[index]),
-                            maxHeight: geometry.size.height - 24,
-                            isPast: barIsPast(index: index, totalBars: waveformData.count, progress: progress),
-                            isPlaying: isPlaying
-                        )
+                // Waveform bars container
+                VStack {
+                    Spacer()
+
+                    HStack(alignment: .center, spacing: barSpacing) {
+                        ForEach(0..<waveformData.count, id: \.self) { index in
+                            WaveformBar(
+                                amplitude: CGFloat(waveformData[index]),
+                                maxHeight: 50,
+                                isPast: barIsPast(index: index, totalBars: waveformData.count, progress: progress),
+                                isPlaying: isPlaying
+                            )
+                        }
                     }
+                    .frame(height: 50)
+
+                    Spacer()
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, DesignSystem.Spacing.medium)
                 .padding(.vertical, DesignSystem.Spacing.small)
 
@@ -43,9 +49,10 @@ struct WaveformTimeline: View {
                 if !waveformData.isEmpty {
                     PlayheadIndicator(
                         progress: progress,
-                        width: geometry.size.width,
+                        width: geometry.size.width - (DesignSystem.Spacing.medium * 2),
                         isPlaying: isPlaying
                     )
+                    .offset(x: DesignSystem.Spacing.medium - (geometry.size.width / 2))
                 }
 
                 // Loading or empty state
