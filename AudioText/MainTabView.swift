@@ -139,7 +139,7 @@ struct RecordingView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .fullScreenCover(isPresented: $showingTranscription) {
-            TranscriptionView(transcription: currentTranscription)
+            TranscriptionWindowView(transcription: currentTranscription)
         }
         .alert("Recording Error", isPresented: recordingErrorBinding) {
             Button("OK", role: .cancel) {
@@ -319,10 +319,53 @@ struct RecordingView: View {
 
     private func toggleRecording() {
         if audioRecorder.isRecording {
-            audioRecorder.stopRecording()
+            if let recording = audioRecorder.stopRecording() {
+                processTranscription(for: recording)
+            }
         } else {
             Task {
                 await audioRecorder.startRecording()
+            }
+        }
+    }
+
+    private func processTranscription(for recording: RecordingFile) {
+        guard lastProcessedRecordingID != recording.id else { return }
+        isProcessingTranscription = true
+        transcriptionErrorMessage = nil
+
+        Task {
+            defer {
+                Task { @MainActor in
+                    isProcessingTranscription = false
+                    lastProcessedRecordingID = recording.id
+                }
+            }
+
+            let language = selectedLanguageCode.isEmpty || selectedLanguageCode == "auto" ? "auto" : selectedLanguageCode
+
+            do {
+                let text: String
+                switch transcriptionMethod {
+                case .builtIn:
+                    text = try await speechRecognizer.transcribeAudio(from: recording.fileURL, language: language)
+                case .openAI:
+                    text = try await openAIService.transcribeAudio(
+                        from: recording.fileURL,
+                        language: language,
+                        textStyle: selectedTextStyle
+                    )
+                }
+
+                Task { @MainActor in
+                    audioRecorder.attachTranscript(text, to: recording)
+                    currentTranscription = text
+                    showingTranscription = true
+                }
+            } catch {
+                Task { @MainActor in
+                    transcriptionErrorMessage = error.localizedDescription
+                }
             }
         }
     }
