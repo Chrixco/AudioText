@@ -463,7 +463,7 @@ struct LibraryView: View {
             ShareSheet(items: recordingsToShare.map { $0.fileURL })
         }
         .sheet(item: $selectedRecordingForDetail) { recording in
-            RecordingDetailView(recording: recording)
+            RecordingDetailView(recording: recording, selectedTab: $selectedTab)
                 .environmentObject(audioPlayer)
                 .environmentObject(audioRecorder)
         }
@@ -650,6 +650,7 @@ private struct RecordingRowView: View {
 
 private struct RecordingDetailView: View {
     let recording: RecordingFile
+    @Binding var selectedTab: Int
     @EnvironmentObject private var audioPlayer: AudioPlayer
     @EnvironmentObject private var audioRecorder: AudioRecorder
     @Environment(\.dismiss) private var dismiss
@@ -786,11 +787,17 @@ private struct RecordingDetailView: View {
                 audioPlayer.pause()
             } else {
                 audioPlayer.resume()
+                // Switch to Player tab when resuming
+                selectedTab = 2
+                dismiss()
             }
         } else {
             Task {
                 await audioPlayer.play(recording)
             }
+            // Switch to Player tab when starting new playback
+            selectedTab = 2
+            dismiss()
         }
         HapticManager.shared.selection()
     }
