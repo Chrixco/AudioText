@@ -17,77 +17,79 @@ struct WaveformTimeline: View {
     private let barSpacing: CGFloat = 2
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .center) {
-                // Background - Black with debossed shadow
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
-                    .fill(Color.black)
-                    .applyShadows(DesignSystem.NeumorphicShadow.deepDebossed())
+        ZStack {
+            // Black background container with neumorphic shadow
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small, style: .continuous)
+                .fill(Color.black)
+                .applyShadows(DesignSystem.NeumorphicShadow.deepDebossed())
 
-                // Waveform bars container
-                VStack {
-                    Spacer()
-
+            // Content
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Waveform bars - centered vertically
                     HStack(alignment: .center, spacing: barSpacing) {
                         ForEach(0..<waveformData.count, id: \.self) { index in
                             WaveformBar(
                                 amplitude: CGFloat(waveformData[index]),
-                                maxHeight: 50,
+                                maxHeight: 48,
                                 isPast: barIsPast(index: index, totalBars: waveformData.count, progress: progress),
                                 isPlaying: isPlaying
                             )
                         }
                     }
-                    .frame(height: 50)
+                    .padding(.horizontal, DesignSystem.Spacing.medium)
 
-                    Spacer()
-                }
-                .padding(.horizontal, DesignSystem.Spacing.medium)
-                .padding(.vertical, DesignSystem.Spacing.small)
-
-                // Playhead indicator
-                if !waveformData.isEmpty {
-                    PlayheadIndicator(
-                        progress: progress,
-                        width: geometry.size.width - (DesignSystem.Spacing.medium * 2),
-                        isPlaying: isPlaying
-                    )
-                    .offset(x: DesignSystem.Spacing.medium - (geometry.size.width / 2))
-                }
-
-                // Loading or empty state
-                if isLoadingWaveform {
-                    VStack {
-                        ProgressView()
-                            .tint(Color.white)
-                        Text("Loading waveform...")
-                            .font(.caption)
-                            .foregroundStyle(Color.white.opacity(0.6))
+                    // Playhead indicator
+                    if !waveformData.isEmpty {
+                        PlayheadIndicator(
+                            progress: progress,
+                            width: geometry.size.width,
+                            horizontalPadding: DesignSystem.Spacing.medium,
+                            isPlaying: isPlaying
+                        )
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if waveformData.isEmpty {
-                    Text("Waveform")
-                        .font(.caption)
-                        .foregroundStyle(Color.white.opacity(0.6))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    // Loading or empty state
+                    if isLoadingWaveform {
+                        HStack {
+                            Spacer()
+                            VStack(spacing: 8) {
+                                ProgressView()
+                                    .tint(Color.white)
+                                Text("Loading...")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(Color.white.opacity(0.5))
+                            }
+                            Spacer()
+                        }
+                    } else if waveformData.isEmpty {
+                        HStack {
+                            Spacer()
+                            Text("No waveform data")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Color.white.opacity(0.5))
+                            Spacer()
+                        }
+                    }
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            isDragging = true
+                            let effectiveWidth = geometry.size.width - (DesignSystem.Spacing.medium * 2)
+                            let xPos = value.location.x - DesignSystem.Spacing.medium
+                            let position = max(0, min(1, xPos / effectiveWidth))
+                            onSeek(position)
+                            HapticManager.shared.selection()
+                        }
+                        .onEnded { _ in
+                            isDragging = false
+                        }
+                )
             }
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        isDragging = true
-                        let position = max(0, min(1, value.location.x / geometry.size.width))
-                        onSeek(position)
-                        HapticManager.shared.selection()
-                    }
-                    .onEnded { _ in
-                        isDragging = false
-                    }
-            )
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 80)
+        .frame(height: 70)
         .task(id: recording.id) {
             await loadWaveform()
         }
@@ -198,13 +200,16 @@ private struct WaveformBar: View {
 private struct PlayheadIndicator: View {
     let progress: Double
     let width: CGFloat
+    let horizontalPadding: CGFloat
     let isPlaying: Bool
 
     private var offset: CGFloat {
-        // Map progress (0-1) to horizontal position (0 to width)
-        // Clamp to ensure it stays within bounds
-        let position = CGFloat(max(0, min(1, progress))) * width
-        return position
+        // Calculate effective width (accounting for padding)
+        let effectiveWidth = width - (horizontalPadding * 2)
+        // Map progress (0-1) to position within effective width
+        let position = CGFloat(max(0, min(1, progress))) * effectiveWidth
+        // Add left padding to position
+        return horizontalPadding + position
     }
 
     var body: some View {
@@ -218,15 +223,15 @@ private struct PlayheadIndicator: View {
             Circle()
                 .fill(Color.white)
                 .frame(width: 8, height: 8)
-                .offset(y: -36)
+                .offset(y: -28)
 
             // Glow effect when playing
             if isPlaying {
                 Circle()
-                    .fill(Color.white.opacity(0.5))
-                    .frame(width: 16, height: 16)
-                    .offset(y: -36)
-                    .blur(radius: 4)
+                    .fill(Color.white.opacity(0.4))
+                    .frame(width: 14, height: 14)
+                    .offset(y: -28)
+                    .blur(radius: 3)
                     .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isPlaying)
             }
         }
