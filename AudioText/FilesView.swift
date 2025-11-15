@@ -303,6 +303,9 @@ struct RecordingDetailCard: View {
     @State private var isExporting = false
     @State private var exportErrorMessage: String?
 
+    // NEW: Neumorphic equalizer settings
+    @State private var newEqualizerSettings = NeumorphicEqualizerSettings()
+
     init(
         recording: RecordingFile,
         showingScript: Binding<Bool>,
@@ -430,7 +433,7 @@ struct RecordingDetailCard: View {
                         Text("Equalizer")
                             .font(.title3.weight(.semibold))
                             .padding(.horizontal, 4)
-                        Text("Adjust five-band EQ and output gain, then save to this recording.")
+                        Text("Adjust five-band EQ in two panels, then save to this recording.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
@@ -438,16 +441,56 @@ struct RecordingDetailCard: View {
                             .padding(.horizontal, 4)
                     }
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(alignment: .bottom, spacing: 16) {
-                            ForEach(tonalBands) { band in
-                                EqualizerBandControl(
-                                    band: band,
-                                    value: binding(for: band)
-                                )
+                    // Two-panel layout with 3 bars each
+                    VStack(spacing: 20) {
+                        // Panel 1: Low, Low-Mid, Mid frequencies
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Low & Mid Frequencies")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 4)
+
+                            HStack(alignment: .bottom, spacing: 20) {
+                                ForEach([EqualizerBand.lowShelf, EqualizerBand.bass, EqualizerBand.mid], id: \.self) { band in
+                                    EqualizerBandControl(
+                                        band: band,
+                                        value: binding(for: band)
+                                    )
+                                }
                             }
+                            .frame(maxWidth: .infinity)
                         }
-                        .padding(.horizontal, 4)
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(DesignSystem.Colors.surface.opacity(0.5))
+                        )
+
+                        // Panel 2: High-Mid, High frequencies
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("High Frequencies")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 4)
+
+                            HStack(alignment: .bottom, spacing: 20) {
+                                ForEach([EqualizerBand.presence, EqualizerBand.air], id: \.self) { band in
+                                    EqualizerBandControl(
+                                        band: band,
+                                        value: binding(for: band)
+                                    )
+                                }
+                                // Spacer to balance the layout
+                                Spacer()
+                                    .frame(width: 80)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(DesignSystem.Colors.surface.opacity(0.5))
+                        )
                     }
 
                     Divider()
@@ -493,6 +536,33 @@ struct RecordingDetailCard: View {
                             .disabled(!isEqualizerDirty)
                         }
                     }
+                }
+
+                Divider()
+                    .padding(.vertical, 20)
+
+                // NEW NEUMORPHIC EQUALIZER (Built from scratch!)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("NEW: Neumorphic Equalizer")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(DesignSystem.Colors.accentBlue)
+
+                            Text("Built from scratch with SwiftUI • Swipeable panels")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 24))
+                            .foregroundStyle(DesignSystem.Colors.accentCyan)
+                    }
+                    .padding(.horizontal, 4)
+
+                    NeumorphicEqualizerPanel(settings: $newEqualizerSettings)
                 }
             }
             .padding(.horizontal, 16)
@@ -728,38 +798,64 @@ struct EqualizerBandControl: View {
     let band: EqualizerBand
     @Binding var value: Double
 
-    private let barWidth: CGFloat = 56  // Increased from 52
-    private let barHeight: CGFloat = 190  // Increased from 180
+    @State private var isDragging = false
+    private let haptics = HapticManager.shared
+
+    private let barWidth: CGFloat = 80  // Larger for two-panel layout (3 bars each)
+    private let barHeight: CGFloat = 240  // Taller for better control range
 
     var body: some View {
         VStack(spacing: 8) {
             Text(formattedValue)
-                .font(.caption2.monospacedDigit())
+                .font(.caption.monospacedDigit().weight(.semibold))
+                .foregroundStyle(isDragging ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.textPrimary)
                 .frame(maxWidth: .infinity)
+                .animation(.easeInOut(duration: 0.2), value: isDragging)
 
             GeometryReader { proxy in
                 let height = proxy.size.height
+                let centerY = height * 0.5  // Center position for 0dB
 
                 ZStack(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                    // Background debossed container
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control + 2, style: .continuous)
                         .fill(DesignSystem.Colors.background)
-                        .shadow(color: DesignSystem.Colors.shadowDark, radius: 10, x: 4, y: 4)
-                        .shadow(color: DesignSystem.Colors.shadowLight, radius: 8, x: -3, y: -3)
+                        .shadow(color: DesignSystem.Colors.shadowDark, radius: isDragging ? 12 : 10, x: isDragging ? 5 : 4, y: isDragging ? 5 : 4)
+                        .shadow(color: DesignSystem.Colors.shadowLight, radius: isDragging ? 10 : 8, x: isDragging ? -4 : -3, y: isDragging ? -4 : -3)
+                        .animation(.easeInOut(duration: 0.15), value: isDragging)
 
+                    // Center line indicator (0dB reference)
+                    Rectangle()
+                        .fill(DesignSystem.Colors.textTertiary.opacity(0.3))
+                        .frame(height: 1)
+                        .offset(y: -centerY)
+
+                    // Active fill gradient
                     RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [DesignSystem.Colors.accentBlue.opacity(0.35), DesignSystem.Colors.accentBlue.opacity(0.75)],
-                                startPoint: .bottom,
-                                endPoint: .top
-                            )
-                        )
-                        .frame(height: max(4, height * normalizedValue))
+                        .fill(fillGradient)
+                        .frame(height: max(6, min(height, height * normalizedValue)))
+                        .shadow(color: gradientColor.opacity(0.4), radius: isDragging ? 6 : 3, x: 0, y: 0)
+                        .animation(.easeInOut(duration: 0.15), value: isDragging)
+
+                    // Glow effect when dragging
+                    if isDragging {
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.control, style: .continuous)
+                            .fill(gradientColor.opacity(0.2))
+                            .frame(height: max(6, min(height, height * normalizedValue)))
+                            .blur(radius: 8)
+                    }
                 }
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { gesture in
+                            if !isDragging {
+                                isDragging = true
+                                if #available(iOS 13.0, *) {
+                                    haptics.soft()
+                                }
+                            }
+
                             let clampedY = min(max(0, gesture.location.y), height)
                             let ratio = 1 - (clampedY / height)
                             let range = band.gainRange
@@ -767,7 +863,19 @@ struct EqualizerBandControl: View {
                             let step = max(band.step, 0.1)
                             let quantized = (mapped / step).rounded() * step
                             let clampedValue = min(max(quantized, range.lowerBound), range.upperBound)
+
+                            // Reduced haptic feedback - only every 2 steps
+                            if abs(clampedValue - value) >= step * 2 {
+                                if #available(iOS 13.0, *) {
+                                    haptics.soft()
+                                }
+                            }
+
                             value = clampedValue
+                        }
+                        .onEnded { _ in
+                            isDragging = false
+                            haptics.light()
                         }
                 )
             }
@@ -776,14 +884,16 @@ struct EqualizerBandControl: View {
             VStack(spacing: 2) {
                 Text(band.title)
                     .font(.caption2.weight(.semibold))
+                    .foregroundStyle(isDragging ? DesignSystem.Colors.accentBlue : DesignSystem.Colors.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(band.frequencyLabel)
                     .font(.caption2)
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(isDragging ? DesignSystem.Colors.accentBlue.opacity(0.7) : Color.secondary)
             }
             .frame(maxWidth: .infinity)
+            .animation(.easeInOut(duration: 0.2), value: isDragging)
         }
-        .frame(width: barWidth + 8)
+        .frame(width: barWidth + 12)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(band.title) band")
         .accessibilityValue(formattedValue)
@@ -794,8 +904,10 @@ struct EqualizerBandControl: View {
             switch direction {
             case .increment:
                 value = min(value + step, range.upperBound)
+                haptics.light()
             case .decrement:
                 value = max(value - step, range.lowerBound)
+                haptics.light()
             default:
                 break
             }
@@ -811,6 +923,60 @@ struct EqualizerBandControl: View {
 
     private var formattedValue: String {
         String(format: "%+.1f dB", value)
+    }
+
+    // Dynamic gradient based on value (boost vs cut)
+    private var fillGradient: LinearGradient {
+        let range = band.gainRange
+        let isBoost = value > 0
+        let isCut = value < 0
+        let intensity = abs(value) / max(abs(range.upperBound), abs(range.lowerBound))
+
+        if isBoost {
+            // Green to yellow gradient for boost
+            return LinearGradient(
+                colors: [
+                    DesignSystem.Colors.accentGreen.opacity(0.4 + Double(intensity) * 0.4),
+                    DesignSystem.Colors.accentGreen.opacity(0.6 + Double(intensity) * 0.3)
+                ],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+        } else if isCut {
+            // Blue gradient for cut
+            return LinearGradient(
+                colors: [
+                    DesignSystem.Colors.accentBlue.opacity(0.4 + Double(intensity) * 0.4),
+                    DesignSystem.Colors.accentBlue.opacity(0.6 + Double(intensity) * 0.3)
+                ],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+        } else {
+            // Neutral gray for 0dB
+            return LinearGradient(
+                colors: [
+                    DesignSystem.Colors.textSecondary.opacity(0.3),
+                    DesignSystem.Colors.textSecondary.opacity(0.4)
+                ],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+        }
+    }
+
+    // Color for glow and shadow effects
+    private var gradientColor: Color {
+        let isBoost = value > 0
+        let isCut = value < 0
+
+        if isBoost {
+            return DesignSystem.Colors.accentGreen
+        } else if isCut {
+            return DesignSystem.Colors.accentBlue
+        } else {
+            return DesignSystem.Colors.textSecondary
+        }
     }
 }
 

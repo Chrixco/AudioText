@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		865858382EC8B78200C2E157 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 865858372EC8B78200C2E157 /* EqualizerSettings.swift */; };
+		865858392EC8B78200C2E157 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 865858372EC8B78200C2E157 /* EqualizerSettings.swift */; };
 		865CFB712EAD31D4005AF892 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB22222222222226 /* Preview Assets.xcassets */; };
 		868EF2372EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */; };
 		868EF2382EAFA50800E7A496 /* SettingsWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */; };
@@ -67,8 +69,6 @@
 		AA11111111111147 /* RecordingMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222251 /* RecordingMetadataStore.swift */; };
 		AA11111111111148 /* LanguageOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222252 /* LanguageOption.swift */; };
 		AA11111111111149 /* LanguageOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222252 /* LanguageOption.swift */; };
-		AA11111111111150 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222253 /* EqualizerSettings.swift */; };
-		AA11111111111151 /* EqualizerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22222222222253 /* EqualizerSettings.swift */; };
 		AA33333333333330 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333330 /* ContentView.swift */; };
 		AA33333333333331 /* AudioTextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333331 /* AudioTextApp.swift */; };
 		AA33333333333332 /* Components/RotaryKnob.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB33333333333332 /* Components/RotaryKnob.swift */; };
@@ -80,6 +80,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		865858372EC8B78200C2E157 /* EqualizerSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerSettings.swift; sourceTree = "<group>"; };
 		868EF2352EAFA50800E7A496 /* SettingsWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowView.swift; sourceTree = "<group>"; };
 		868EF2362EAFA50800E7A496 /* TranscriptionWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionWindowView.swift; sourceTree = "<group>"; };
 		868EF23B2EAFAAA700E7A496 /* LibraryWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryWindowView.swift; sourceTree = "<group>"; };
@@ -112,7 +113,6 @@
 		BB22222222222250 /* TranscriptionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionResult.swift; sourceTree = "<group>"; };
 		BB22222222222251 /* RecordingMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMetadataStore.swift; sourceTree = "<group>"; };
 		BB22222222222252 /* LanguageOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageOption.swift; sourceTree = "<group>"; };
-		BB22222222222253 /* EqualizerSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerSettings.swift; sourceTree = "<group>"; };
 		BB33333333333330 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BB33333333333331 /* AudioTextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTextApp.swift; sourceTree = "<group>"; };
 		BB33333333333332 /* Components/RotaryKnob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components/RotaryKnob.swift; sourceTree = "<group>"; };
@@ -220,11 +220,11 @@
 		FF66666666666680 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				865858372EC8B78200C2E157 /* EqualizerSettings.swift */,
 				BB22222222222240 /* RecordingFile.swift */,
 				BB22222222222250 /* TranscriptionResult.swift */,
 				BB22222222222251 /* RecordingMetadataStore.swift */,
 				BB22222222222252 /* LanguageOption.swift */,
-				BB22222222222253 /* EqualizerSettings.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -351,7 +351,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA11111111111147 /* RecordingMetadataStore.swift in Sources */,
-				AA11111111111151 /* EqualizerSettings.swift in Sources */,
 				868EF2392EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */,
 				868EF23A2EAFA50800E7A496 /* SettingsWindowView.swift in Sources */,
 				AA11111111111149 /* LanguageOption.swift in Sources */,
@@ -368,6 +367,7 @@
 				868EF2C52EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */,
 				868EF2C72EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */,
 				868EF2C82EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */,
+				865858382EC8B78200C2E157 /* EqualizerSettings.swift in Sources */,
 				868EF2C92EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */,
 				868EF2CA2EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */,
 				868EF2CB2EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */,
@@ -391,7 +391,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA11111111111146 /* RecordingMetadataStore.swift in Sources */,
-				AA11111111111150 /* EqualizerSettings.swift in Sources */,
 				868EF2372EAFA50800E7A496 /* TranscriptionWindowView.swift in Sources */,
 				868EF2382EAFA50800E7A496 /* SettingsWindowView.swift in Sources */,
 				AA11111111111148 /* LanguageOption.swift in Sources */,
@@ -408,6 +407,7 @@
 				868EF2CD2EB56E0800E7A496 /* NeumorphicRotaryPlayButton.swift in Sources */,
 				868EF2CF2EB56E0800E7A496 /* NeumorphicLanguageSelector.swift in Sources */,
 				868EF2D02EB56E0800E7A496 /* NeumorphicStatusBanner.swift in Sources */,
+				865858392EC8B78200C2E157 /* EqualizerSettings.swift in Sources */,
 				868EF2D12EB56E0800E7A496 /* NeumorphicLibraryButton.swift in Sources */,
 				868EF2D22EB56E0800E7A496 /* NeumorphicRecordingButton.swift in Sources */,
 				868EF2D32EB56E0800E7A496 /* NeumorphicPlaybackControls.swift in Sources */,
